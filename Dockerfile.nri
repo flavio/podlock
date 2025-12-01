@@ -1,0 +1,32 @@
+# Build the nri binary
+FROM golang:1.25.4 AS builder
+
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+# cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
+
+# Copy the go source
+COPY cmd/ cmd/
+COPY api/ api/
+COPY internal/ internal/
+COPY pkg/ pkg/
+
+RUN CGO_ENABLED=0 GOOS=linux go build -a -o ./nri ./cmd/nri && \
+  CGO_ENABLED=0 GOOS=linux go build -a -o ./seal ./cmd/seal && \
+  CGO_ENABLED=0 GOOS=linux go build -a -o ./swap-oci-hook ./cmd/swap-oci-hook
+
+FROM scratch
+WORKDIR /
+COPY --from=builder /workspace/nri .
+COPY --from=builder /workspace/seal .
+COPY --from=builder /workspace/swap-oci-hook .
+
+# Run as root to have permissions to read/write necessary files to the host
+# and to have access to the NRI socket
+USER 0:0
+
+ENTRYPOINT ["/nri"]

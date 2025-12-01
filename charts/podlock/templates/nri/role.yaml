@@ -1,0 +1,35 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    {{ include "podlock.labels" . | nindent 4 }}
+    app.kubernetes.io/component: nri
+  name: {{ include "podlock.fullname" . }}-nri
+rules:
+- apiGroups:
+  - podlock.kubewarden.io
+  resources:
+  - landlockprofiles
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    {{ include "podlock.labels" . | nindent 4 }}
+    app.kubernetes.io/component: nri-init
+  name: {{ include "podlock.fullname" . }}-nri-init
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+  - update

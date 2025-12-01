@@ -1,0 +1,16 @@
+apiVersion: podlock.kubewarden.io/v1alpha1
+kind: LandlockProfile
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  profilesByContainer:
+    nginx:
+      "/usr/sbin/nginx":
+        readExec:
+          - /lib
+          - /lib64
+        readOnly:
+          - /usr/share/nginx
+        readWrite:
+          - /tmp

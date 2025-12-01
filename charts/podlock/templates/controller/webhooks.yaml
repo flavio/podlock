@@ -1,0 +1,63 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "podlock.fullname" . }}-controller-webhook-tls
+  name: {{ include "podlock.fullname" . }}-controller-webhook
+  labels:
+    {{ include "podlock.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller
+webhooks:
+  - admissionReviewVersions:
+    - v1
+    - v1beta1
+    clientConfig:
+      service:
+        name: {{ include "podlock.fullname" . }}-controller-webhook
+        namespace: {{ .Release.Namespace }}
+        path: /mutate-podlock-kubewarden-io-v1alpha1-landlockprofile
+    failurePolicy: Fail
+    name: mlandlockprofile.podlock.kubewarden.io
+    rules:
+    - apiGroups:
+      - podlock.kubewarden.io
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - landlockprofiles
+    sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "podlock.fullname" . }}-controller-webhook-tls
+  name: {{ include "podlock.fullname" . }}-controller-webhook-validating
+  labels:
+    {{ include "podlock.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller
+webhooks:
+  - admissionReviewVersions:
+    - v1
+    - v1beta1
+    clientConfig:
+      service:
+        name: {{ include "podlock.fullname" . }}-controller-webhook
+        namespace: {{ .Release.Namespace }}
+        path: /validate-podlock-kubewarden-io-v1alpha1-landlockprofile
+    failurePolicy: Fail
+    name: vlandlockprofile.podlock.kubewarden.io
+    rules:
+    - apiGroups:
+      - podlock.kubewarden.io
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - landlockprofiles
+    sideEffects: None

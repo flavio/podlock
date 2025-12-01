@@ -1,0 +1,7 @@
+FROM alpine
+WORKDIR /
+COPY ./bin/nri /nri
+COPY ./bin/seal /seal
+COPY ./bin/swap-oci-hook /swap-oci-hook
+
+ENTRYPOINT ["/nri"]

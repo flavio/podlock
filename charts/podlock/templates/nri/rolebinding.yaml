@@ -1,0 +1,31 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "podlock.fullname" . }}-nri
+  labels:
+    {{ include "podlock.labels" .| nindent 4 }}
+    app.kubernetes.io/component: nri
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "podlock.fullname" . }}-nri
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "podlock.fullname" . }}-nri
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "podlock.fullname" . }}-nri-init
+  labels:
+    {{ include "podlock.labels" .| nindent 4 }}
+    app.kubernetes.io/component: nri-init
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "podlock.fullname" . }}-nri-init
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "podlock.fullname" . }}-nri-init
+    namespace: {{ .Release.Namespace }}

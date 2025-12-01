@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "podlock.fullname" . }}-nri-plugin
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      {{ include "podlock.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: nri
+  template:
+    metadata:
+      labels:
+        {{ include "podlock.labels" . | nindent 8 }}
+        app.kubernetes.io/component: nri
+    spec:
+      initContainers:
+        - name: detect-landlock-support
+          image: '{{ template "system_default_registry" . }}{{ .Values.nri.image.repository }}:{{ .Values.nri.image.tag }}'
+          imagePullPolicy: {{ .Values.nri.image.pullPolicy }}
+          args:
+            - -init-mode
+          {{- if .Values.nri.logLevel }}
+            - -log-level={{ .Values.nri.logLevel }}
+          {{- end }}
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          resources:
+            limits:
+              cpu: 500m
+              memory: 200Mi
+            requests:
+              cpu: 250m
+              memory: 50Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            # Mount the token secret for the nri-init ServiceAccount
+            # this overrides the ServiceAccount default token mount
+            - name: init-sa-token
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+      containers:
+        - name: nri
+          image: '{{ template "system_default_registry" . }}{{ .Values.nri.image.repository }}:{{ .Values.nri.image.tag }}'
+          imagePullPolicy: {{ .Values.nri.image.pullPolicy }}
+          args:
+            - -idx
+            - "10"
+          {{- if .Values.nri.logLevel }}
+            - -log-level={{ .Values.nri.logLevel }}
+          {{- end }}
+          {{- if and .Values.nri.resources }}
+          resources:
+{{ toYaml .Values.nri.resources | indent 12 }}
+          {{- end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: nri-socket
+              mountPath: /var/run/nri/nri.sock
+            - name: host-opt-podlock
+              mountPath: /host/opt/podlock
+            - name: var-run-podlock
+              mountPath: /var/run/podlock
+      volumes:
+        - name: nri-socket
+          hostPath:
+            path: /var/run/nri/nri.sock
+            type: Socket
+        - name: host-opt-podlock
+          hostPath:
+            path: /opt/podlock
+        - name: var-run-podlock
+          hostPath:
+            path: /var/run/podlock
+        - name: init-sa-token
+          secret:
+            secretName: {{ include "podlock.fullname" . }}-nri-init-token
+      serviceAccountName: {{ include "podlock.fullname" . }}-nri
