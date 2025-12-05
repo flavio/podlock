@@ -26,6 +26,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
@@ -72,11 +77,11 @@ jobs:
           # Upload the charts if the .cr-release-packages directory is not empty
           if [ "$(ls ${PACKAGE_PATH})" ]; then
             # Upload the chart to the GitHub release
-            cr upload --config ${CONFIG_FILE} -o ${OWNER} -r ${REPO} -c "$(git rev-parse HEAD)" --skip-existing  --make-release-latest=false --token ${CR_TOKEN} --push 
+            cr upload --config ${CONFIG_FILE} -o ${OWNER} -r ${REPO} -c "$(git rev-parse HEAD)" --skip-existing  --make-release-latest=false --token ${CR_TOKEN} --push --release-name-template="{{ .Name }}-helm-chart-{{ .Version }}"
             echo "Charts released!"
             
             # Reindex the repository
-            cr index --config ${CONFIG_FILE} -o ${OWNER} -r ${REPO} --push --token ${CR_TOKEN} --index-path .
+            cr index --config ${CONFIG_FILE} -o ${OWNER} -r ${REPO} --token ${CR_TOKEN} --index-path .
             echo "Repository indexed!"
 
             # Publish the charts to the OCI registry and sign them
