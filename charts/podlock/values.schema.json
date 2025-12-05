@@ -101,7 +101,7 @@
     },
     "global": {
       "additionalProperties": false,
-      "description": "NOTE: This section is used to configure the global settings for the sbomscanner chart.",
+      "description": "NOTE: This section is used to configure the global settings for the podlock chart.",
       "properties": {
         "cattle": {
           "additionalProperties": false,

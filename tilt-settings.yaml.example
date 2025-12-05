@@ -1,7 +1,7 @@
 allow_default_k8s_context: False
 registry: ghcr.io
 nri: 
-    image: <username>/sbomscanner/nri
+    image: <username>/podlock/nri
 controller: 
-    image: <username>/sbomscanner/controller
+    image: <username>/podlock/controller
 

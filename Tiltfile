@@ -10,7 +10,7 @@ update_settings(k8s_upsert_timeout_secs=300)
 #
 # Note: We are not using the tilt cert-manager extension, since it creates a namespace to test cert-manager,
 # which takes a long time to delete when running `tilt down`.
-# We Install the cert-manager CRDs separately, so we are sure they will be avalable before the sbomscanner Helm chart is installed.
+# We Install the cert-manager CRDs separately, so we are sure they will be avalable before the podlock Helm chart is installed.
 cert_manager_version = "v1.18.2"
 local_resource(
     "cert-manager-crds",

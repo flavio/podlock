@@ -151,9 +151,9 @@ linters:
     #- wsl # [too strict and mostly code is not more readable] whitespace linter forces you to use empty lines
 
     ############################################################################
-    # SBOMscanner linter customization
+    # podlock linter customization
     # The following linters are disabled because they does not make sense for
-    # the SBOMscanner
+    # the podlock
     ############################################################################
 
     # We disable the testpackage linter because we have tests which is not

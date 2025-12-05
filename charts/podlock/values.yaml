@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# NOTE: This section is used to configure the global settings for the sbomscanner chart.
+# NOTE: This section is used to configure the global settings for the podlock chart.
 global:
   cattle:
     systemDefaultRegistry: ghcr.io
