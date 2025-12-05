@@ -112,7 +112,7 @@ func TestDiscoverLinkedLibrariesStaticallyLinkedBin(t *testing.T) {
 	// Check if the binary exists
 	if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
 		// Try to build the binary
-		cmd := exec.Command("make", "seal")
+		cmd := exec.Command("make", "-C", "../../", "seal")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()
