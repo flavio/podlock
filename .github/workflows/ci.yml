@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  workflow_call:
+  push:
+  pull_request:
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: "go.mod"
+      - run: make test
+      - name: Upload unit-tests coverage to Codecov
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        with:
+          name: unit-tests
+          directory: coverage
+          flags: unit-tests
+          verbose: true
+          token: ${{ secrets.CODECOV_REPO_TOKEN }}
+
+  helm-unittest:
+    name: Helm unittest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - name: Install helm
+        uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
+      # Disable plugin verification until the following issue is addressed https://github.com/helm-unittest/helm-unittest/issues/777
+      - name: Install Helm-unittest
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest --verify=false
+      - run: make helm-unittest
+
+  golangci:
+    name: Golangci-lint
+    runs-on: ubuntu-latest
+    env:
+      # Needed by trivy > 0.67.x
+      GOEXPERIMENT: "jsonv2"
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: "go.mod"
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@e7fa5ac41e1cf5b7d48e45e42232ce7ada589601 # v9.1.0
+        with:
+          version: v2.5.0
+
+  commitlint:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          fetch-depth: 0
+      - name: Discover latest version of commitlint
+        id: discover-commitlint-version
+        run: |
+          latest_version=$(curl -s https://api.github.com/repos/conventional-changelog/commitlint/releases/latest | jq -r '.tag_name')
+          echo "version=$latest_version" >> $GITHUB_OUTPUT
+        shell: bash
+      - name: Cache commitlint
+        id: cache-commitlint
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            node_modules
+            package.json
+            package-lock.json
+          key: ${{ runner.os }}-commitlint-${{ steps.discover-commitlint-version.outputs.version }}
+      - name: Install commitlint
+        if: steps.cache-commitlint.outputs.cache-hit != 'true'
+        run: npm install -D @commitlint/cli @commitlint/config-conventional
+      - name: Print versions
+        run: |
+          git --version
+          node --version
+          npm --version
+          npx commitlint --version
+      - name: Validate PR commits with commitlint
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
