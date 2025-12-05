@@ -35,9 +35,6 @@ jobs:
         id: pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
 
-      - name: Install cosign
-        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
-
       - name: Install chart-releaser
         uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
         with:
@@ -83,25 +80,6 @@ jobs:
             # Reindex the repository
             cr index --config ${CONFIG_FILE} -o ${OWNER} -r ${REPO} --token ${CR_TOKEN} --index-path .  --release-name-template="{{ .Name }}-helm-chart-{{ .Version }}"
             echo "Repository indexed!"
-
-            # Publish the charts to the OCI registry and sign them
-            REGISTRY="ghcr.io/$GITHUB_REPOSITORY_OWNER/podlock"
-            echo "REGISTRY=${REGISTRY}" >> "$GITHUB_ENV"
-            for chart_path in $(find ${PACKAGE_PATH} -maxdepth 1 -mindepth 1 ); do
-              echo "Pushing chart $chart_path to ghcr.io"
-              chart_name=$(helm show chart ${chart_path} | yq ".name")
-              push_output=$(helm push $chart_path "oci://$REGISTRY" 2>&1)
-              chart_url=$(echo $push_output | sed -n 's/Pushed: \(.*\):.* Digest: \(.*\)$/\1\@\2/p')
-              digest=$(echo $push_output | sed -n 's/Pushed: \(.*\):.* Digest: \(.*\)$/\2/p')
-              echo "DIGEST_${chart_name}=${digest}" >> "$GITHUB_ENV"
-              # We need to disable the new bundle format enabled by default since 
-              # cosign v3.x.x because some verification tools (e.g. slsactl) are not
-              # able to properly verify the signatures using this new format
-              cosign sign --yes --new-bundle-format=false --use-signing-config=false "$chart_url"
-              # Sign with cosign v3 signature format as well
-              cosign sign --yes --new-bundle-format=true --use-signing-config=true "$chart_url"
-              echo "Chart $chart_name signed and pushed to ghcr.io"
-            done
           fi
 
       - name: Prepare GH pages readme & artifacthub-repo.yml
