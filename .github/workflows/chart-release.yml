@@ -5,14 +5,20 @@ on:
     branches:
       - main
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  attestations: write
+  contents: write
+  id-token: write
+  packages: write
+  pages: write
+
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
   release:
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
 
     steps:
@@ -21,12 +27,116 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      - name: Install cosign
+        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
 
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
         env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "$GITHUB_ACTOR"
+          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install chart-releaser
+        uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
+        with:
+          install_only: true
+
+      - name: Release Helm charts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -ex
+
+          OWNER=${{ github.repository_owner }}
+          REPO=podlock
+          CONFIG_FILE=cr.yaml
+          PACKAGE_PATH=.cr-release-packages
+          CR_TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+          rm -rf ${PACKAGE_PATH}
+          # Release each chart in the charts directory
+          for chart in $(find charts -maxdepth 1 -mindepth 1  -type d ); do
+            chart_name=$(basename $chart)
+            chart_path=${PACKAGE_PATH}/${chart_name}-*.tgz
+
+            cr package charts/${chart_name} --config ${CONFIG_FILE} --package-path ${PACKAGE_PATH}
+
+            # check if the chart version is already release. If so, do nothing
+            chart_version=$(helm show chart $chart_path | yq -r '.version')
+            if gh --repo ${OWNER}/${REPO} release view $chart_name-helm-chart-$chart_version; then
+              echo "Chart $chart_name-$chart_version already released. No need to release again."
+              rm $chart_path
+              continue
+            fi
+
+          done
+
+          # Upload the charts if the .cr-release-packages directory is not empty
+          if [ "$(ls ${PACKAGE_PATH})" ]; then
+            # Upload the chart to the GitHub release
+            cr upload --config ${CONFIG_FILE} -o ${OWNER} -r ${REPO} -c "$(git rev-parse HEAD)" --skip-existing  --make-release-latest=false --token ${CR_TOKEN} --push --release-name-template="{{ .Name }}-helm-chart-{{ .Version }}"
+            echo "Charts released!"
+            
+            # Reindex the repository
+            cr index --config ${CONFIG_FILE} -o ${OWNER} -r ${REPO} --push --token ${CR_TOKEN} --index-path .  --release-name-template="{{ .Name }}-helm-chart-{{ .Version }}"
+            echo "Repository indexed!"
+
+            # Publish the charts to the OCI registry and sign them
+            REGISTRY="ghcr.io/$GITHUB_REPOSITORY_OWNER/charts"
+            echo "REGISTRY=${REGISTRY}" >> "$GITHUB_ENV"
+            for chart_path in $(find ${PACKAGE_PATH} -maxdepth 1 -mindepth 1 ); do
+              echo "Pushing chart $chart_path to ghcr.io"
+              chart_name=$(helm show chart ${chart_path} | yq ".name")
+              push_output=$(helm push $chart_path "oci://$REGISTRY" 2>&1)
+              chart_url=$(echo $push_output | sed -n 's/Pushed: \(.*\):.* Digest: \(.*\)$/\1\@\2/p')
+              digest=$(echo $push_output | sed -n 's/Pushed: \(.*\):.* Digest: \(.*\)$/\2/p')
+              echo "DIGEST_${chart_name}=${digest}" >> "$GITHUB_ENV"
+              # We need to disable the new bundle format enabled by default since 
+              # cosign v3.x.x because some verification tools (e.g. slsactl) are not
+              # able to properly verify the signatures using this new format
+              cosign sign --yes --new-bundle-format=false --use-signing-config=false "$chart_url"
+              # Sign with cosign v3 signature format as well
+              cosign sign --yes --new-bundle-format=true --use-signing-config=true "$chart_url"
+              echo "Chart $chart_name signed and pushed to ghcr.io"
+            done
+          fi
+
+      - name: Prepare GH pages readme & artifacthub-repo.yml
+        run: |
+          mkdir -p ./to-gh-pages
+          cp -f artifacthub-repo.yml ./to-gh-pages/
+
+      - name: Configure Git
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "$GITHUB_ACTOR"
+          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git config --global url."https://${GH_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+
+      - name: Clone existing gh-pages branch and commit
+        run: |
+          git fetch origin gh-pages
+          git worktree add gh-pages-worktree gh-pages
+          cp -r ./to-gh-pages/* gh-pages-worktree/
+          cd gh-pages-worktree
+          git add .
+          git commit -m "Update GitHub Pages content" || echo "No changes to commit"
+          git push origin gh-pages
+
+      - name: Generate provenance attestation for podlock chart and push to OCI
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
+        if: env.DIGEST_podlock != ''
+        with:
+          push-to-registry: true
+          subject-name: ${{ env.REGISTRY}}/podlock
+          subject-digest: ${{ env.DIGEST_podlock }}

@@ -10,16 +10,16 @@ on:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
-  pages: write
+  contents: write
   id-token: write
+  pages: write
 
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -43,18 +43,23 @@ jobs:
       - name: Generate Site
         run: npx antora antora-playbook.yml
 
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
-        with:
-          path: build/site
+      - name: Configure Git
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "$GITHUB_ACTOR"
+          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git config --global url."https://${GH_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+      - name: Clone existing gh-pages branch and commit
+        run: |
+          git fetch origin gh-pages
+          git worktree add gh-pages-worktree gh-pages
+          cp -r ./build/site/* gh-pages-worktree/
+          # Disable Jekyll
+          touch gh-pages-worktree/.nojekyll
+
+          cd gh-pages-worktree
+          git add .
+          git commit -m "Update GitHub Pages content" || echo "No changes to commit"
+          git push origin gh-pages
