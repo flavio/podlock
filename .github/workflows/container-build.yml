@@ -98,7 +98,7 @@ jobs:
       id-token: write # Signing images with cosign
     strategy:
       matrix:
-        component: [controller, worker, storage]
+        component: [controller, nri]
     steps:
       - name: Download all digests
         uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
@@ -197,7 +197,7 @@ jobs:
       packages: write # Pushing attestations to ghcr.io
     strategy:
       matrix:
-        component: [controller, worker, storage]
+        component: [controller, nri]
         arch: [amd64, arm64]
         include:
           - arch: amd64
