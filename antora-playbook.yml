@@ -1,0 +1,15 @@
+site:
+  title: PodLock Docs
+  start_page: podlock-docs::index.adoc
+
+content:
+  sources:
+    - url: .
+      start_path: docs
+      branches: HEAD
+
+ui:
+  bundle:
+    # Use the default Antora UI bundle
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true
