@@ -37,3 +37,7 @@ tilt-settings.yaml
 
 # e2e cluster logs
 test/e2e/logs
+
+# antora dirs
+build/
+node_modules/

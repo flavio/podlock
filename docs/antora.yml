@@ -1,0 +1,5 @@
+name: podlock-docs
+title: PodLock Documentation
+version: ~ # ~ means "default" (no specific version number required yet)
+nav:
+  - modules/ROOT/nav.adoc

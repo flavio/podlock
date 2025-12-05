@@ -1,0 +1,10 @@
+= Welcome to My Project
+:navtitle: Home
+
+Welcome to the documentation for **My Project**.
+
+== Getting Started
+This site is built automatically using Antora and GitHub Actions.
+
+* [x] Feature A
+* [x] Feature B

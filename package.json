@@ -1,0 +1,30 @@
+{
+  "name": "podlock",
+  "version": "1.0.0",
+  "description": "PodLock restrict process execution and file access in Kubernetes Pods using the [Landlock](https://landlock.io/) Linux Kernel LSM.",
+  "main": "commitlint.config.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flavio/podlock.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/flavio/podlock/issues"
+  },
+  "homepage": "https://github.com/flavio/podlock#readme",
+  "dependencies": {
+    "@antora/cli": "^3.1.14",
+    "@antora/site-generator": "^3.1.14"
+  }
+}
