@@ -81,7 +81,7 @@ jobs:
             echo "Charts released!"
             
             # Reindex the repository
-            cr index --config ${CONFIG_FILE} -o ${OWNER} -r ${REPO} --token ${CR_TOKEN} --index-path .
+            cr index --config ${CONFIG_FILE} -o ${OWNER} -r ${REPO} --token ${CR_TOKEN} --index-path .  --release-name-template="{{ .Name }}-helm-chart-{{ .Version }}"
             echo "Repository indexed!"
 
             # Publish the charts to the OCI registry and sign them
@@ -109,6 +109,7 @@ jobs:
           mkdir -p ./to-gh-pages
           cp -f charts/README.md ./to-gh-pages/
           cp -f artifacthub-repo.yml ./to-gh-pages/
+          cp -f index.yaml ./to-gh-pages/
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
