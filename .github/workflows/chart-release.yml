@@ -85,7 +85,6 @@ jobs:
       - name: Prepare GH pages readme & artifacthub-repo.yml
         run: |
           mkdir -p ./to-gh-pages
-          cp -f charts/README.md ./to-gh-pages/
           cp -f artifacthub-repo.yml ./to-gh-pages/
           cp -f index.yaml ./to-gh-pages/
 
