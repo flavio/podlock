@@ -36,3 +36,7 @@ Access to `/usr/share/nginx` is going to be read only, while `/tmp` will also be
 Landlock works in a "deny all" approach. Because of that, the nginx process will not be
 able to read other parts of the filesytem. It won't be able to start other binaries from
 the system, unless they are under the lib directories (to which it has no write access).
+
+## Documentation
+
+Full project documentation is available at [https://flavio.github.io/podlock](https://flavio.github.io/podlock).
