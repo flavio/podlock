@@ -106,6 +106,10 @@ manifests: ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefin
 generate-chart: ## Generate Helm chart values schema.
 	$(HELM_SCHEMA)
 
+.PHONY: docs
+docs:
+	npx antora antora-playbook.yml
+
 ##@ Dependencies
 
 ## Location to install dependencies to
