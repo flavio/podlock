@@ -5,7 +5,9 @@ This guide helps you get started with PodLock.
 
 == Requirements
 
-* A Kubernetes cluster with nodes running Linux kernel with Landlock support.
+* A Kubernetes cluster with:
+  * Nodes running Linux kernel with Landlock support.
+  * A container runtime that supports Node Resource Interface (NRI).
 * `helm` installed locally
 * `kubectl` installed locally
 * `cert-manager` installed in the cluster
@@ -18,6 +20,8 @@ should be running inside a VM or physical machines with Landlock support.
 Unfortunately, as of December 2025, the VM used by minikube does not support Landlock.
 
 It's recommended to use https://lima-vm.io/[lima] instead.
+
+TIP: Lima is a lightweight VM manager for Linux on macOS and Linux. See https://lima-vm.io/ for more information.
 
 [source,bash]
 ----
@@ -35,6 +39,16 @@ Then you can grab the `kubeconfig` using the following command:
 ----
 export KUBECONFIG=$(limactl list podlock --format 'unix://{{.Dir}}/copied-from-guest/kubeconfig.yaml')
 ----
+
+The container runtime must support https://github.com/containerd/nri/[Node Resource Interface (NRI)].
+Currently only `containerd` and `CRI-O` support NRI.
+
+containerd support for NRI has been introduced starting from version 1.7, it has
+been enabled by default starting from version 2.0.
+
+CRI-O supports NRI starting from https://cri-o.github.io/cri-o/v1.25.0.html[version 1.25],
+please refer to the 
+https://github.com/cri-o/cri-o/blob/main/docs/crio.conf.5.md#crionri-table[CRI-O documentation for enabling NRI support].
 
 === Install cert-manager
 
