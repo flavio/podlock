@@ -40,7 +40,7 @@ Then you can grab the `kubeconfig` using the following command:
 export KUBECONFIG=$(limactl list podlock --format 'unix://{{.Dir}}/copied-from-guest/kubeconfig.yaml')
 ----
 
-The container runtime must support https://github.com/containerd/nri/[Node Resource Interface (NRI)].
+The container runtime engine must support https://github.com/containerd/nri/[Node Resource Interface (NRI)].
 Currently only `containerd` and `CRI-O` support NRI.
 
 containerd support for NRI has been introduced starting from version 1.7, it has
@@ -49,6 +49,9 @@ been enabled by default starting from version 2.0.
 CRI-O supports NRI starting from https://cri-o.github.io/cri-o/v1.25.0.html[version 1.25],
 please refer to the 
 https://github.com/cri-o/cri-o/blob/main/docs/crio.conf.5.md#crionri-table[CRI-O documentation for enabling NRI support].
+
+A container runtime like `runC` must be used as low-level runtime for the
+container engine.
 
 === Install cert-manager
 
