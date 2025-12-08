@@ -52,6 +52,9 @@
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="uninstall.html">Uninstall Guide</a>
   </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="architecture.html">Architecture Overview</a>
+  </li>
 </ul>
   </li>
 </ul>
@@ -102,7 +105,13 @@
 <div class="ulist">
 <ul>
 <li>
-<p>A Kubernetes cluster with nodes running Linux kernel with Landlock support.</p>
+<p>A Kubernetes cluster with:</p>
+</li>
+<li>
+<p>Nodes running Linux kernel with Landlock support.</p>
+</li>
+<li>
+<p>A container runtime that supports Node Resource Interface (NRI).</p>
 </li>
 <li>
 <p><code>helm</code> installed locally</p>
@@ -130,6 +139,18 @@ should be running inside a VM or physical machines with Landlock support.</p>
 <div class="paragraph">
 <p>It&#8217;s recommended to use <a href="https://lima-vm.io/">lima</a> instead.</p>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Lima is a lightweight VM manager for Linux on macOS and Linux. See <a href="https://lima-vm.io/" class="bare">https://lima-vm.io/</a> for more information.
+</td>
+</tr>
+</table>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">limactl start \
@@ -147,6 +168,23 @@ should be running inside a VM or physical machines with Landlock support.</p>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export KUBECONFIG=$(limactl list podlock --format 'unix://{{.Dir}}/copied-from-guest/kubeconfig.yaml')</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>The container runtime engine must support <a href="https://github.com/containerd/nri/">Node Resource Interface (NRI)</a>.
+Currently only <code>containerd</code> and <code>CRI-O</code> support NRI.</p>
+</div>
+<div class="paragraph">
+<p>containerd support for NRI has been introduced starting from version 1.7, it has
+been enabled by default starting from version 2.0.</p>
+</div>
+<div class="paragraph">
+<p>CRI-O supports NRI starting from <a href="https://cri-o.github.io/cri-o/v1.25.0.html">version 1.25</a>,
+please refer to the
+<a href="https://github.com/cri-o/cri-o/blob/main/docs/crio.conf.5.md#crionri-table">CRI-O documentation for enabling NRI support</a>.</p>
+</div>
+<div class="paragraph">
+<p>A container runtime like <code>runC</code> must be used as low-level runtime for the
+container engine.</p>
 </div>
 <div class="sect2">
 <h3 id="_install_cert_manager"><a class="anchor" href="#_install_cert_manager"></a>Install cert-manager</h3>
