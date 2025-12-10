@@ -26,5 +26,9 @@
   "dependencies": {
     "@antora/cli": "^3.1.14",
     "@antora/site-generator": "^3.1.14"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.2.0",
+    "@commitlint/config-conventional": "^20.2.0"
   }
 }
