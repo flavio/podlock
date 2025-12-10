@@ -5,8 +5,9 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -68,9 +69,15 @@ func (v *LandlockProfileCustomValidator) ValidateCreate(_ context.Context, obj r
 	}
 	v.logger.Info("Validation for LandlockProfile upon creation", "name", profile.GetName())
 
-	// TODO: add validation logic
-	// - ensure binary paths are absolute and do not container traversals
-	// - ensure no overlapping paths between different access levels
+	allErrs := v.validateProfile(profile)
+
+	if len(allErrs) > 0 {
+		return nil, apierrors.NewInvalid(
+			v1alpha1.GroupVersion.WithKind("LandlockProfile").GroupKind(),
+			profile.Name,
+			allErrs,
+		)
+	}
 
 	return nil, nil
 }
@@ -83,9 +90,38 @@ func (v *LandlockProfileCustomValidator) ValidateUpdate(_ context.Context, _, ne
 	}
 	v.logger.Info("Validation for LandlockProfile upon update", "name", profile.GetName())
 
-	// TODO: add validation logic
+	allErrs := v.validateProfile(profile)
+
+	if len(allErrs) > 0 {
+		return nil, apierrors.NewInvalid(
+			v1alpha1.GroupVersion.WithKind("LandlockProfile").GroupKind(),
+			profile.Name,
+			allErrs,
+		)
+	}
 
 	return nil, nil
+}
+
+func (v *LandlockProfileCustomValidator) validateProfile(profile *v1alpha1.LandlockProfile) field.ErrorList {
+	var allErrs field.ErrorList
+
+	specPath := field.NewPath("spec", "profilesByContainer")
+	for containerName, profileByBinary := range profile.Spec.ProfilesByContainer {
+		containerPath := specPath.Key(containerName)
+		for binaryPath, binProfile := range profileByBinary {
+			binaryPathField := containerPath.Key(binaryPath)
+
+			allErrs = append(allErrs, v.validateBinaryPath(binaryPath, binaryPathField)...)
+			allErrs = append(allErrs, v.validateNoOverlappingPaths(binProfile, binaryPathField)...)
+			allErrs = append(allErrs, v.validateReadOnlyPaths(binProfile, binaryPathField)...)
+			allErrs = append(allErrs, v.validateReadWritePaths(binProfile, binaryPathField)...)
+			allErrs = append(allErrs, v.validateReadExecPaths(binProfile, binaryPathField)...)
+			allErrs = append(allErrs, v.validateReadWriteExecPaths(binProfile, binaryPathField)...)
+		}
+	}
+
+	return allErrs
 }
 
 // ValidateDelete implements webhook.CustomValidator so a webhook will be registered for the type LandlockProfile.
