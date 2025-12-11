@@ -8,6 +8,14 @@ metadata:
   name: {{ include "podlock.fullname" . }}-controller
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - podlock.kubewarden.io
   resources:
   - landlockprofiles
