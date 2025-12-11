@@ -1,0 +1,279 @@
+= Quickstart
+:navtitle: Quickstart Guide
+
+This guide helps you get started with PodLock.
+
+== Requirements
+
+* A Kubernetes cluster with:
+  * Nodes running Linux kernel with Landlock support.
+  * A container runtime that supports Node Resource Interface (NRI).
+* `helm` installed locally
+* `kubectl` installed locally
+* `cert-manager` installed in the cluster
+
+== Preparing the cluster
+
+It is not recommended to run PodLock with clusters spawned by kind, the nodes
+should be running inside a VM or physical machines with Landlock support.
+
+Unfortunately, as of December 2025, the VM used by minikube does not support Landlock.
+
+It's recommended to use https://lima-vm.io/[lima] instead.
+
+TIP: Lima is a lightweight VM manager for Linux on macOS and Linux. See https://lima-vm.io/ for more information.
+
+[source,bash]
+----
+limactl start \
+  --cpus 4 \
+  --memory 16 \
+  --name podlock \
+  --yes \
+  template:k3s
+----
+
+Then you can grab the `kubeconfig` using the following command:
+
+[source,bash]
+----
+export KUBECONFIG=$(limactl list podlock --format 'unix://{{.Dir}}/copied-from-guest/kubeconfig.yaml')
+----
+
+The container runtime engine must support https://github.com/containerd/nri/[Node Resource Interface (NRI)].
+Currently only `containerd` and `CRI-O` support NRI.
+
+containerd support for NRI has been introduced starting from version 1.7, it has
+been enabled by default starting from version 2.0.
+
+CRI-O supports NRI starting from https://cri-o.github.io/cri-o/v1.25.0.html[version 1.25],
+please refer to the 
+https://github.com/cri-o/cri-o/blob/main/docs/crio.conf.5.md#crionri-table[CRI-O documentation for enabling NRI support].
+
+A container runtime like `runC` must be used as low-level runtime for the
+container engine.
+
+=== Install cert-manager
+
+PodLock uses webhooks for validating resources, which require TLS certificates.
+cert-manager automates the creation and management of these certificates.
+
+To install cert-manager, run the following commands:
+
+[source,bash]
+----
+helm repo add jetstack https://charts.jetstack.io
+
+helm repo update
+
+helm install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --set crds.enabled=true \
+  --wait
+----
+
+For more information on configuring cert-manager, please visit the
+https://cert-manager.io/docs/installation/helm[cert-manager documentation].
+
+=== Install PodLock
+
+To install PodLock using Helm, run the following commands:
+
+[source,bash]
+----
+helm repo add podlock https://flavio.github.io/podlock
+
+helm repo update podlock
+
+helm install podlock podlock/podlock \
+  --namespace podlock \
+  --create-namespace \
+  --wait
+----
+
+=== Verify the installation
+
+After installation, ensure all pods are running:
+
+[source,bash]
+----
+kubectl get pods -n podlock
+----
+
+Example output:
+
+[source,bash]
+----
+kubectl get all -n podlock
+NAME                                      READY   STATUS    RESTARTS      AGE
+pod/podlock-controller-6ccd46779d-v4fzz   1/1     Running   1 (29m ago)   29m
+pod/podlock-nri-plugin-c676q              1/1     Running   1 (29m ago)   29m
+
+NAME                                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/podlock-controller-webhook   ClusterIP   10.43.82.139   <none>        443/TCP   29m
+
+NAME                                DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+daemonset.apps/podlock-nri-plugin   1         1         1       1            1           <none>          29m
+
+NAME                                 READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/podlock-controller   1/1     1            1           29m
+
+NAME                                            DESIRED   CURRENT   READY   AGE
+replicaset.apps/podlock-controller-6ccd46779d   1         1         1       29m
+----
+
+== Applying a Landlock Profile
+
+In this example, we'll create a Pod that performs various file operations and attempts
+to execute binaries. We'll then apply a Landlock profile to restrict which operations
+are allowed.
+
+Let's start by creating a test Pod:
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  name: landlock-test
+  namespace: default
+  labels:
+    podlock.kubewarden.io/profile: "demo"
+spec:
+  restartPolicy: Never
+  containers:
+    - name: main
+      image: alpine:latest
+      command: ["/bin/ash", "-c"]
+      args:
+        - |
+          echo "Testing allowed read..."
+          cat /etc/hostname
+
+          echo "Testing forbidden execution"
+          apk version
+
+          echo "Testing forbidden write"
+          cp -v /etc/motd /motd
+
+          echo "Testing allowed read and allowed write"
+          cp -v /etc/motd /tmp
+
+          echo "Testing forbidden read"
+          cp -v /etc/passwd /tmp
+
+          echo "Test done, going to sleep"
+
+          sleep 1h
+----
+
+This Pod is based on the `alpine:latest` image, and it tries to perform
+various file operations. It also tries to execute the `apk` binary.
+
+Now let's create a Landlock profile to restrict some of these operations:
+
+[source,yaml]
+----
+apiVersion: podlock.kubewarden.io/v1alpha1
+kind: LandlockProfile
+metadata:
+  name: demo
+  namespace: default
+spec:
+  profilesByContainer:
+    main:
+      "/bin/ash":
+        readExec:
+          - "/bin/echo"
+          - "/bin/cat"
+          - "/bin/cp"
+          - "/bin/sleep"
+          - "/lib"
+        readWrite:
+          - "/tmp"
+        readOnly:
+          - "/etc/hostname"
+          - "/etc/motd"
+----
+
+The `LandlockProfile` and the `Pod` are located in the same namespace (`default`).
+The profile is bound to the Pod using the label `podlock.kubewarden.io/profile: "demo"`.
+
+Now let's apply both resources:
+
+[source,bash]
+----
+kubectl apply -f landlock-profile.yaml
+kubectl apply -f landlock-test-pod.yaml
+----
+
+You can check the Pod logs to see the results of the file operations:
+
+[source,bash]
+----
+kubectl logs landlock-test
+----
+
+You will see output similar to this:
+
+[source,bash]
+----
+Testing allowed read...
+landlock-test
+Testing forbidden execution
+Testing forbidden write
+/bin/ash: apk: Permission denied
+cp: can't create '/motd': Permission denied
+Testing allowed read and allowed write
+'/etc/motd' -> '/tmp/motd'
+Testing forbidden read
+cp: can't open '/etc/passwd': Permission denied
+Test done, going to sleep
+----
+
+As you can see, the Pod was able to read `/etc/hostname` and copy `/etc/motd` to `/tmp`.
+However, it was not able to execute the `apk` command, nor write to the root filesystem
+or read `/etc/passwd`, as those operations were not allowed by the Landlock profile.
+
+You can now delete the Pod and the profile:
+
+[source,bash]
+----
+kubectl delete pod -n default landlock-test
+kubectl delete landlockprofile demo -n default
+----
+
+== Troubleshooting
+
+If the PodLock controller pod is not running:
+
+[source,bash]
+----
+kubectl describe pod -n podlock -l app=podlock-controller
+----
+
+=== Verify Landlock support
+
+The PodLock NRI plugin automatically detects the Landlock version supported by each node
+and adds a label to it.
+
+Check the Landlock version on your nodes:
+
+[source,bash]
+----
+kubectl get nodes -L podlock.kubewarden.io/landlock-version
+----
+
+You should see output similar to this:
+[source,bash]
+----
+NAME           STATUS   ROLES                  AGE   VERSION        LANDLOCK-VERSION
+lima-podlock   Ready    control-plane,master   22h   v1.33.6+k3s1   4
+----
+
+The `podlock.kubewarden.io/landlock-version` label contains the Landlock version number (0, 1, 2, 3, etc.).
+A value of `0` means the node has no Landlock support.
+
+IMPORTANT: PodLock requires Landlock version 3 or higher. Nodes with version
+0, 1, or 2 do not provide the necessary Landlock features for PodLock to work.

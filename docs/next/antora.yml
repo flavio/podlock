@@ -1,0 +1,6 @@
+name: podlock-docs
+title: PodLock
+version: next
+prerelease: true
+nav:
+  - modules/ROOT/nav.adoc

@@ -5,7 +5,11 @@ site:
 content:
   sources:
     - url: .
-      start_path: docs
+      start_path: docs/next
+      branches: HEAD
+
+    - url: .
+      start_path: docs/v0.0.1
       branches: HEAD
 
 ui:

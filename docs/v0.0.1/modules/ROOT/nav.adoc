@@ -1,0 +1,4 @@
+* xref:index.adoc[Home]
+* xref:quickstart.adoc[]
+* xref:uninstall.adoc[]
+* xref:architecture.adoc[]
