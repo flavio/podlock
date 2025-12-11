@@ -64,8 +64,7 @@ preventing accidental removal of active security policies.
 
 The controller also exposes validation and mutation webhooks for LandlockProfile resources and for Pods.
 
-NOTE: As of release `v0.0.1`, the webhooks are registered but they do not perform any validation or mutation.
-Moreover, the controller does not handle finalizers for LandlockProfile resources.
+NOTE: As of release `v0.0.1`, the controller does not handle finalizers for LandlockProfile resources.
 
 == Node Resource Interface (NRI) Plugin
 
