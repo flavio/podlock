@@ -20,6 +20,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	// LandlockProfileFinalizer is added to LandlockProfile resources to ensure
+	// they are not deleted while still in use by Pods.
+	LandlockProfileFinalizer = "podlock.kubewarden.io/landlockprofile"
+)
+
 type ProfileByBinary map[string]Profile
 
 // LandlockProfileSpec defines the desired state of LandlockProfile

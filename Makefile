@@ -46,7 +46,7 @@ lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 vet:
 	$(GO_BUILD_ENV) go vet ./...
 
-CONTROLLER_SRC_DIRS := cmd/controller api internal/controller internal/webhook
+CONTROLLER_SRC_DIRS := cmd/controller api internal/controller internal/webhook pkg/constants
 CONTROLLER_GO_SRCS := $(shell find $(CONTROLLER_SRC_DIRS) -type f -name '*.go')
 CONTROLLER_SRCS := $(GO_MOD_SRCS) $(CONTROLLER_GO_SRCS)
 .PHONY: controller

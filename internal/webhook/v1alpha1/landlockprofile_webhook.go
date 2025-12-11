@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
@@ -43,12 +44,22 @@ var _ webhook.CustomDefaulter = &LandLockProfileCustomDefaulter{}
 func (d *LandLockProfileCustomDefaulter) Default(_ context.Context, obj runtime.Object) error {
 	profile, ok := obj.(*v1alpha1.LandlockProfile)
 	if !ok {
-		return fmt.Errorf("expected a Registry object but got %T", obj)
+		return fmt.Errorf("expected a LandlockProfile object but got %T", obj)
+	}
+
+	// Check if the profile is being deleted
+	if !profile.DeletionTimestamp.IsZero() {
+		// No need to default a deleting object
+		return nil
 	}
 
 	d.logger.Info("Defaulting LandlockProfile", "name", profile.GetName())
 
-	// TODO: add finalizer to ensure a profile cannot be deleted while in use by a Pod
+	// Add finalizer to ensure a profile cannot be deleted while in use by a Pod
+	if !controllerutil.ContainsFinalizer(profile, v1alpha1.LandlockProfileFinalizer) {
+		controllerutil.AddFinalizer(profile, v1alpha1.LandlockProfileFinalizer)
+		d.logger.Info("Added finalizer to LandlockProfile", "name", profile.GetName())
+	}
 
 	return nil
 }

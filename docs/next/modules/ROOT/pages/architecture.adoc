@@ -64,8 +64,6 @@ preventing accidental removal of active security policies.
 
 The controller also exposes validation and mutation webhooks for LandlockProfile resources and for Pods.
 
-NOTE: As of release `v0.0.1`, the controller does not handle finalizers for LandlockProfile resources.
-
 == Node Resource Interface (NRI) Plugin
 
 The NRI plugin is a critical component that ensures Landlock profiles are applied to pods at runtime.

@@ -25,23 +25,3 @@ spec:
   issuerRef:
     kind: Issuer
     name: {{ include "podlock.fullname" . }}-controller-webhook-issuer
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: {{ include "podlock.fullname" . }}-nats-controller-client-tls
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "podlock.labels" . | nindent 4 }}
-    app.kubernetes.io/component: controller
-spec:
-  secretName: {{ include "podlock.fullname" . }}-nats-controller-client-tls
-  dnsNames:
-    - {{ include "podlock.fullname" . }}-controller
-  duration: 2160h # 90 days
-  renewBefore: 240h # 10 days
-  issuerRef:
-    name: {{ include "podlock.fullname" . }}-nats-ca
-    kind: Issuer
-    group: cert-manager.io
-
