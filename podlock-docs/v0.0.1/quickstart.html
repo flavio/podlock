@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Quickstart :: PodLock</title>
+    <meta name="generator" content="Antora 3.1.14">
+    <link rel="stylesheet" href="../../_/css/site.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../..">PodLock</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/flavio/podlock" target="_blank" rel="noopener noreferrer"
+          title="View Source on GitHub">
+          <span class="icon">
+            <svg style="width:24px;height:24px" viewBox="0 0 16 16" fill="currentColor">
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+            </svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </nav>
+</header><div class="body">
+<div class="nav-container" data-component="podlock-docs" data-version="v0.0.1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">PodLock</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Home</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="quickstart.html">Quickstart Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="uninstall.html">Uninstall Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="architecture.html">Architecture Overview</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">PodLock</span>
+    <span class="version">v0.0.1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="index.html">PodLock</a></div>
+      <ul class="versions">
+        <li class="version">
+          <a href="../next/index.html">next</a>
+        </li>
+        <li class="version is-current is-latest">
+          <a href="index.html">v0.0.1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">PodLock</a></li>
+    <li><a href="quickstart.html">Quickstart Guide</a></li>
+  </ul>
+</nav>
+<div class="page-versions">
+  <button class="version-menu-toggle" title="Show other versions of page">v0.0.1</button>
+  <div class="version-menu">
+    <a class="version" href="../next/quickstart.html">next</a>
+    <a class="version is-current" href="quickstart.html">v0.0.1</a>
+  </div>
+</div>
+<div class="edit-this-page"><a href="https://github.com/flavio/podlock/edit/main/docs/v0.0.1/modules/ROOT/pages/quickstart.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+  <h1 class="page">Quickstart</h1>
+
+
+
+  <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This guide helps you get started with PodLock.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_requirements"><a class="anchor" href="#_requirements"></a>Requirements</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>A Kubernetes cluster with:</p>
+</li>
+<li>
+<p>Nodes running Linux kernel with Landlock support.</p>
+</li>
+<li>
+<p>A container runtime that supports Node Resource Interface (NRI).</p>
+</li>
+<li>
+<p><code>helm</code> installed locally</p>
+</li>
+<li>
+<p><code>kubectl</code> installed locally</p>
+</li>
+<li>
+<p><code>cert-manager</code> installed in the cluster</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_preparing_the_cluster"><a class="anchor" href="#_preparing_the_cluster"></a>Preparing the cluster</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It is not recommended to run PodLock with clusters spawned by kind, the nodes
+should be running inside a VM or physical machines with Landlock support.</p>
+</div>
+<div class="paragraph">
+<p>Unfortunately, as of December 2025, the VM used by minikube does not support Landlock.</p>
+</div>
+<div class="paragraph">
+<p>It&#8217;s recommended to use <a href="https://lima-vm.io/">lima</a> instead.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Lima is a lightweight VM manager for Linux on macOS and Linux. See <a href="https://lima-vm.io/" class="bare">https://lima-vm.io/</a> for more information.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">limactl start \
+  --cpus 4 \
+  --memory 16 \
+  --name podlock \
+  --yes \
+  template:k3s</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then you can grab the <code>kubeconfig</code> using the following command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export KUBECONFIG=$(limactl list podlock --format 'unix://{{.Dir}}/copied-from-guest/kubeconfig.yaml')</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The container runtime engine must support <a href="https://github.com/containerd/nri/">Node Resource Interface (NRI)</a>.
+Currently only <code>containerd</code> and <code>CRI-O</code> support NRI.</p>
+</div>
+<div class="paragraph">
+<p>containerd support for NRI has been introduced starting from version 1.7, it has
+been enabled by default starting from version 2.0.</p>
+</div>
+<div class="paragraph">
+<p>CRI-O supports NRI starting from <a href="https://cri-o.github.io/cri-o/v1.25.0.html">version 1.25</a>,
+please refer to the
+<a href="https://github.com/cri-o/cri-o/blob/main/docs/crio.conf.5.md#crionri-table">CRI-O documentation for enabling NRI support</a>.</p>
+</div>
+<div class="paragraph">
+<p>A container runtime like <code>runC</code> must be used as low-level runtime for the
+container engine.</p>
+</div>
+<div class="sect2">
+<h3 id="_install_cert_manager"><a class="anchor" href="#_install_cert_manager"></a>Install cert-manager</h3>
+<div class="paragraph">
+<p>PodLock uses webhooks for validating resources, which require TLS certificates.
+cert-manager automates the creation and management of these certificates.</p>
+</div>
+<div class="paragraph">
+<p>To install cert-manager, run the following commands:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm repo add jetstack https://charts.jetstack.io
+
+helm repo update
+
+helm install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --set crds.enabled=true \
+  --wait</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For more information on configuring cert-manager, please visit the
+<a href="https://cert-manager.io/docs/installation/helm">cert-manager documentation</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_install_podlock"><a class="anchor" href="#_install_podlock"></a>Install PodLock</h3>
+<div class="paragraph">
+<p>To install PodLock using Helm, run the following commands:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm repo add podlock https://flavio.github.io/podlock
+
+helm repo update podlock
+
+helm install podlock podlock/podlock \
+  --namespace podlock \
+  --create-namespace \
+  --wait</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_verify_the_installation"><a class="anchor" href="#_verify_the_installation"></a>Verify the installation</h3>
+<div class="paragraph">
+<p>After installation, ensure all pods are running:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl get pods -n podlock</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Example output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl get all -n podlock
+NAME                                      READY   STATUS    RESTARTS      AGE
+pod/podlock-controller-6ccd46779d-v4fzz   1/1     Running   1 (29m ago)   29m
+pod/podlock-nri-plugin-c676q              1/1     Running   1 (29m ago)   29m
+
+NAME                                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/podlock-controller-webhook   ClusterIP   10.43.82.139   &lt;none&gt;        443/TCP   29m
+
+NAME                                DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+daemonset.apps/podlock-nri-plugin   1         1         1       1            1           &lt;none&gt;          29m
+
+NAME                                 READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/podlock-controller   1/1     1            1           29m
+
+NAME                                            DESIRED   CURRENT   READY   AGE
+replicaset.apps/podlock-controller-6ccd46779d   1         1         1       29m</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_applying_a_landlock_profile"><a class="anchor" href="#_applying_a_landlock_profile"></a>Applying a Landlock Profile</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this example, we&#8217;ll create a Pod that performs various file operations and attempts
+to execute binaries. We&#8217;ll then apply a Landlock profile to restrict which operations
+are allowed.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s start by creating a test Pod:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: v1
+kind: Pod
+metadata:
+  name: landlock-test
+  namespace: default
+  labels:
+    podlock.kubewarden.io/profile: "demo"
+spec:
+  restartPolicy: Never
+  containers:
+    - name: main
+      image: alpine:latest
+      command: ["/bin/ash", "-c"]
+      args:
+        - |
+          echo "Testing allowed read..."
+          cat /etc/hostname
+
+          echo "Testing forbidden execution"
+          apk version
+
+          echo "Testing forbidden write"
+          cp -v /etc/motd /motd
+
+          echo "Testing allowed read and allowed write"
+          cp -v /etc/motd /tmp
+
+          echo "Testing forbidden read"
+          cp -v /etc/passwd /tmp
+
+          echo "Test done, going to sleep"
+
+          sleep 1h</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This Pod is based on the <code>alpine:latest</code> image, and it tries to perform
+various file operations. It also tries to execute the <code>apk</code> binary.</p>
+</div>
+<div class="paragraph">
+<p>Now let&#8217;s create a Landlock profile to restrict some of these operations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: podlock.kubewarden.io/v1alpha1
+kind: LandlockProfile
+metadata:
+  name: demo
+  namespace: default
+spec:
+  profilesByContainer:
+    main:
+      "/bin/ash":
+        readExec:
+          - "/bin/echo"
+          - "/bin/cat"
+          - "/bin/cp"
+          - "/bin/sleep"
+          - "/lib"
+        readWrite:
+          - "/tmp"
+        readOnly:
+          - "/etc/hostname"
+          - "/etc/motd"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>LandlockProfile</code> and the <code>Pod</code> are located in the same namespace (<code>default</code>).
+The profile is bound to the Pod using the label <code>podlock.kubewarden.io/profile: "demo"</code>.</p>
+</div>
+<div class="paragraph">
+<p>Now let&#8217;s apply both resources:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl apply -f landlock-profile.yaml
+kubectl apply -f landlock-test-pod.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can check the Pod logs to see the results of the file operations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl logs landlock-test</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You will see output similar to this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">Testing allowed read...
+landlock-test
+Testing forbidden execution
+Testing forbidden write
+/bin/ash: apk: Permission denied
+cp: can't create '/motd': Permission denied
+Testing allowed read and allowed write
+'/etc/motd' -&gt; '/tmp/motd'
+Testing forbidden read
+cp: can't open '/etc/passwd': Permission denied
+Test done, going to sleep</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As you can see, the Pod was able to read <code>/etc/hostname</code> and copy <code>/etc/motd</code> to <code>/tmp</code>.
+However, it was not able to execute the <code>apk</code> command, nor write to the root filesystem
+or read <code>/etc/passwd</code>, as those operations were not allowed by the Landlock profile.</p>
+</div>
+<div class="paragraph">
+<p>You can now delete the Pod and the profile:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl delete pod -n default landlock-test
+kubectl delete landlockprofile demo -n default</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_troubleshooting"><a class="anchor" href="#_troubleshooting"></a>Troubleshooting</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If the PodLock controller pod is not running:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl describe pod -n podlock -l app=podlock-controller</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_verify_landlock_support"><a class="anchor" href="#_verify_landlock_support"></a>Verify Landlock support</h3>
+<div class="paragraph">
+<p>The PodLock NRI plugin automatically detects the Landlock version supported by each node
+and adds a label to it.</p>
+</div>
+<div class="paragraph">
+<p>Check the Landlock version on your nodes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl get nodes -L podlock.kubewarden.io/landlock-version</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see output similar to this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">NAME           STATUS   ROLES                  AGE   VERSION        LANDLOCK-VERSION
+lima-podlock   Ready    control-plane,master   22h   v1.33.6+k3s1   4</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>podlock.kubewarden.io/landlock-version</code> label contains the Landlock version number (0, 1, 2, 3, etc.).
+A value of <code>0</code> means the node has no Landlock support.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+PodLock requires Landlock version 3 or higher. Nodes with version
+0, 1, or 2 do not provide the necessary Landlock features for PodLock to work.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+  </article>  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+  </body>
+</html>

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Architecture :: PodLock</title>
+    <meta name="generator" content="Antora 3.1.14">
+    <link rel="stylesheet" href="../../_/css/site.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../..">PodLock</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/flavio/podlock" target="_blank" rel="noopener noreferrer"
+          title="View Source on GitHub">
+          <span class="icon">
+            <svg style="width:24px;height:24px" viewBox="0 0 16 16" fill="currentColor">
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+            </svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </nav>
+</header><div class="body">
+<div class="nav-container" data-component="podlock-docs" data-version="v0.0.1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">PodLock</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Home</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="quickstart.html">Quickstart Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="uninstall.html">Uninstall Guide</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="architecture.html">Architecture Overview</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">PodLock</span>
+    <span class="version">v0.0.1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="index.html">PodLock</a></div>
+      <ul class="versions">
+        <li class="version">
+          <a href="../next/index.html">next</a>
+        </li>
+        <li class="version is-current is-latest">
+          <a href="index.html">v0.0.1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">PodLock</a></li>
+    <li><a href="architecture.html">Architecture Overview</a></li>
+  </ul>
+</nav>
+<div class="page-versions">
+  <button class="version-menu-toggle" title="Show other versions of page">v0.0.1</button>
+  <div class="version-menu">
+    <a class="version" href="../next/architecture.html">next</a>
+    <a class="version is-current" href="architecture.html">v0.0.1</a>
+  </div>
+</div>
+<div class="edit-this-page"><a href="https://github.com/flavio/podlock/edit/main/docs/v0.0.1/modules/ROOT/pages/architecture.adoc">Edit this Page</a></div>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+  <h1 class="page">Architecture</h1>
+
+
+
+  <div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>PodLock relies on several components to provide <a href="https://landlock.io/">Landlock-based</a>
+security policies for Kubernetes pods.</p>
+</div>
+<div class="paragraph">
+<p>At the bottom level, PodLock uses the Linux Landlock LSM (Linux Security Module) to enforce security policies at the kernel level.
+Landlock allows unprivileged processes to create and enforce security policies that
+restrict their own capabilities, providing a powerful mechanism for sandboxing applications.</p>
+</div>
+<div class="paragraph">
+<p>PodLock consists of the following main components:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>LandlockProfile Custom Resource Definition (CRD)</strong>: This CRD defines the schema for Landlock profiles in Kubernetes.
+Users can create LandlockProfile resources to specify the security policies they want to apply to their pods.</p>
+</li>
+<li>
+<p><strong>PodLock Controller</strong>: This is a Kubernetes controller. The controller is lightweight, it handles
+finalizers for LandlockProfile resources and exposes validation and mutation webhooks for
+LandlockProfile resources and for Pods.</p>
+</li>
+<li>
+<p><strong>Node Resource Interface (NRI) Plugin</strong>: PodLock includes a <a href="https://github.com/containerd/nri/">NRI plugin</a> that integrates with container runtimes
+supporting the NRI specification. The NRI plugin is responsible for applying the Landlock profiles
+to the pods at runtime, ensuring that the specified security policies are enforced when the pods are created.</p>
+</li>
+<li>
+<p><strong><code>swap-oci-hook</code></strong>: This is an <a href="https://github.com/opencontainers/runtime-spec/blob/main/config.md#posix-platform-hooks">OCI (Open Container Initiative) hook</a>
+that is used to prepare the filesystem of the container before it starts.</p>
+</li>
+<li>
+<p><strong><code>seal</code></strong>: This is a binary that is injected into each container by the NRI plugin.
+The <code>seal</code> binary is responsible for applying the Landlock policies.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The next sections provide more details about each of these components.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_landlockprofile_custom_resource_definition_crd"><a class="anchor" href="#_landlockprofile_custom_resource_definition_crd"></a>LandlockProfile Custom Resource Definition (CRD)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A LandlockProfile resource defines a set of Landlock policies to be applied to containers in a pod. Each profile specifies the restrictions for individual binaries within the container,
+including file system access permissions (read, write, and execute).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: podlock.kubewarden.io/v1alpha1
+kind: LandlockProfile
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  profilesByContainer:
+    nginx:
+      "/usr/sbin/nginx":
+        readExec:
+          - /lib
+          - /lib64
+        readOnly:
+          - /usr/share/nginx
+        readWrite:
+          - /tmp</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Containers that are not explicitly listed in a LandlockProfile will not have any Landlock restrictions applied.</p>
+</div>
+<div class="paragraph">
+<p>Binaries that are not listed in the profile for a container have no restrictions applied to them,
+unless they have been invoked by a restricted binary. In that case, they inherit the restrictions of the invoking binary.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_podlock_controller"><a class="anchor" href="#_podlock_controller"></a>PodLock Controller</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The PodLock Controller is responsible for managing the lifecycle of LandlockProfile resources.</p>
+</div>
+<div class="paragraph">
+<p>It ensures that profiles can be deleted only when they are not in use by any pods,
+preventing accidental removal of active security policies.</p>
+</div>
+<div class="paragraph">
+<p>The controller also exposes validation and mutation webhooks for LandlockProfile resources and for Pods.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+As of release <code>v0.0.1</code>, the webhooks are registered but they do not perform any validation or mutation.
+Moreover, the controller does not handle finalizers for LandlockProfile resources.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_node_resource_interface_nri_plugin"><a class="anchor" href="#_node_resource_interface_nri_plugin"></a>Node Resource Interface (NRI) Plugin</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The NRI plugin is a critical component that ensures Landlock profiles are applied to pods at runtime.</p>
+</div>
+<div class="paragraph">
+<p>At startup, the plugin copies a set of helper binaries to the host filesystem under <code>/opt/podlock</code>
+directory.</p>
+</div>
+<div class="paragraph">
+<p>The NRI plugin runs on each node of the cluster as a DaemonSet. It communicates
+with the container runtime engine (containerd or CRI-O) via the NRI socket and listens for pod creation
+and deletion events.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Only containerd and CRI-O are supported as container runtime engines.
+Recent versions of both containerd (2.0+) and CRI-O support NRI out of the box.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Every time a container is about to be created, the PodLock NRI plugin is invoked by
+the container runtime engine.</p>
+</div>
+<div class="paragraph">
+<p>The plugin checks if the pod has any LandlockProfile resources associated with it
+by looking for the existence of the <code>podlock.kubewarden.io/landlock-profiles</code> label.
+If the label is present, the NRI plugin retrieves the specified LandlockProfile resource
+with the given name. Since a LandlockProfile resource can specify different policies for
+different containers, the NRI plugin selects the profile that matches the name of
+the container being created.</p>
+</div>
+<div class="paragraph">
+<p>If the LandlockProfile doesn&#8217;t provide any policy for the container being created,
+no adjustments are made to the container and it is created as usual.</p>
+</div>
+<div class="paragraph">
+<p>Otherwise, the NRI plugin creates a list of container adjustments to be made. These adjustments
+are modifications to the container configuration that will be applied by the runtime before
+the container starts:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Mount the <code>seal</code> binary from host filesystem into the container as a read-only
+bind mount under <code>/.podlock/bin/seal</code>.</p>
+</li>
+<li>
+<p>Mount the <code>profiles.json</code> file (containing the Landlock policies for this container)
+from the host into the container as a read-only bind mount under <code>/.podlock/profiles.json</code>.</p>
+</li>
+<li>
+<p>For each binary listed in the LandlockProfile for the container:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Create an empty file on the host under <code>/var/run/podlock/&lt;pod-id&gt;/&lt;container-name&gt;/swapped-binaries/&lt;original path of the binary&gt;/&lt;binary&gt;</code>.
+This empty file serves as a placeholder that will later be overmounted with the original binary,
+creating a backup that <code>seal</code> can execute.</p>
+</li>
+<li>
+<p>Mount the empty file into the container as a read-only bind mount under
+<code>/.podlock/swapped-binaries/&lt;original path of the binary&gt;/&lt;binary&gt;</code>.</p>
+</li>
+<li>
+<p>Register an <a href="https://github.com/opencontainers/runtime-spec/blob/main/config.md#posix-platform-hooks">OCI hook</a>
+that invokes the <code>swap-oci-hook</code> binary during the <code>createContainer</code> phase. This hook
+will perform the overmounting operations described in the next section.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The adjustments are then returned to the container runtime engine, which applies
+them before starting the container.</p>
+</div>
+<div class="paragraph">
+<p>The NRI plugin is also invoked when a pod is deleted. In this case, the plugin
+cleans up any temporary files created for the pod under <code>/var/run/podlock/</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_oci_hook_swap_oci_hook"><a class="anchor" href="#_oci_hook_swap_oci_hook"></a>OCI hook: <code>swap-oci-hook</code></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>During the container creation phase, the OCI hook registered by the NRI plugin
+is invoked by the OCI runtime (like runC) before the container process starts.</p>
+</div>
+<div class="paragraph">
+<p>The <code>swap-oci-hook</code> binary is responsible for overmounting the binaries listed
+in the LandlockProfile for the container, effectively intercepting their execution.</p>
+</div>
+<div class="paragraph">
+<p>The hook performs two overmount operations for each restricted binary:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Backup the original binary</strong>: The empty file previously mounted under <code>/.podlock/swapped-binaries/&lt;path&gt;/&lt;binary&gt;</code>
+is overmounted with the original binary from its normal location. This creates a backup copy
+that <code>seal</code> can later execute.</p>
+</li>
+<li>
+<p><strong>Replace the binary with seal</strong>: The original binary location is overmounted with the <code>seal</code> binary
+from <code>/.podlock/bin/seal</code>. This means that when the application tries to execute the binary,
+it actually runs <code>seal</code> instead.</p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Example: Restricting /usr/bin/curl</div>
+<div class="paragraph">
+<p>Let&#8217;s assume the LandlockProfile specifies restrictions for <code>/usr/bin/curl</code>.</p>
+</div>
+<div class="paragraph">
+<p>Initial state (after NRI adjustments):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>/usr/bin/curl</code>: original curl binary (unchanged.so far).</p>
+</li>
+<li>
+<p><code>/.podlock/swapped-binaries/usr/bin/curl/curl</code>: empty file mounted from host.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>First overmount (backup original):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The hook overmounts the empty file at <code>/.podlock/swapped-binaries/usr/bin/curl/curl</code>
+with the content of <code>/usr/bin/curl</code>, creating a backup of the original binary.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Second overmount (replace with seal):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The hook overmounts <code>/usr/bin/curl</code> with <code>/.podlock/bin/seal</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Final state:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>/usr/bin/curl</code>: actually points to the <code>seal</code> binary.</p>
+</li>
+<li>
+<p><code>/.podlock/swapped-binaries/usr/bin/curl/curl</code>: contains the original curl binary.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When the application invokes <code>/usr/bin/curl</code>, it actually runs <code>seal</code>, which will apply
+Landlock restrictions and then execute the real curl from the backup location.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Some containers make use of <code>busybox</code> or similar multi-call binaries that provide
+multiple commands from a single binary through symlinks. For example, <code>/bin/cat</code>
+is a symlink to <code>/bin/busybox</code>, which contains the actual implementation of <code>cat</code>.</p>
+</div>
+<div class="paragraph">
+<p>In this case, the <code>swap-oci-hook</code> overmounts only the symlink (e.g., <code>/bin/cat</code>) with <code>seal</code>,
+leaving the target multi-call binary (<code>/bin/busybox</code>) unchanged.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_seal_binary"><a class="anchor" href="#_the_seal_binary"></a>The <code>seal</code> binary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>seal</code> binary is responsible for applying the Landlock policies when a restricted binary
+is executed.</p>
+</div>
+<div class="paragraph">
+<p>When a restricted binary is invoked (e.g., <code>/usr/bin/curl</code>), the <code>seal</code> binary is actually started
+instead, since it has overmounted the original binary.</p>
+</div>
+<div class="paragraph">
+<p>The <code>seal</code> binary determines which binary was intended to be executed by examining the path
+it was invoked from. For example, if invoked as <code>/usr/bin/curl</code>, it knows to
+look for the curl policy and execute the real curl binary from
+<code>/.podlock/swapped-binaries/usr/bin/curl/curl</code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>seal</code> binary reads the Landlock profile for the binary from the <code>/.podlock/profiles.json</code> file
+that was mounted into the container by the NRI plugin.</p>
+</div>
+<div class="paragraph">
+<p>The <code>seal</code> binary then applies the Landlock restrictions specified in the profile
+by using the Landlock API provided by the Linux kernel. This configures the kernel-level
+restrictions that will be enforced for the process.</p>
+</div>
+<div class="paragraph">
+<p>After applying the Landlock restrictions, the <code>seal</code> binary uses the <code>execve</code> system call
+to replace its own process image with the original binary from the backup location
+(e.g., <code>/.podlock/swapped-binaries/usr/bin/curl/curl</code>), effectively starting the intended application
+with the enforced Landlock policies in place.</p>
+</div>
+<div class="paragraph">
+<p>From this point forward, the process runs as the original binary but with Landlock restrictions
+active, limiting its file system access and execution capabilities as specified in the profile.</p>
+</div>
+</div>
+</div>
+  </article>  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+  </body>
+</html>
