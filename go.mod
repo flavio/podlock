@@ -8,7 +8,7 @@ require (
 	github.com/landlock-lsm/go-landlock v0.0.0-20251103212306-430f8e5cd97c
 	github.com/lmittmann/tint v1.1.2
 	github.com/onsi/ginkgo/v2 v2.27.3
-	github.com/onsi/gomega v1.38.2
+	github.com/onsi/gomega v1.38.3
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sys v0.39.0
 	k8s.io/api v0.34.3
