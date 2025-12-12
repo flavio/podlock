@@ -1,10 +1,11 @@
 CONTROLLER_TOOLS_VERSION := v0.16.5
 ENVTEST_VERSION := release-0.19
 ENVTEST_K8S_VERSION := 1.31.0
+HELM_VALUES_SCHEMA_JSON_VERSION := v2.3.1
 
 CONTROLLER_GEN ?= go run sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
 ENVTEST ?= go run sigs.k8s.io/controller-runtime/tools/setup-envtest@$(ENVTEST_VERSION)
-HELM_SCHEMA ?= go run github.com/dadav/helm-schema/cmd/helm-schema@latest
+HELM_SCHEMA ?= go run github.com/losisin/helm-values-schema-json/v2@$(HELM_VALUES_SCHEMA_JSON_VERSION)
 
 GO_MOD_SRCS := go.mod go.sum
 GO_BUILD_ENV := CGO_ENABLED=0 GOOS=linux GOARCH=amd64
@@ -104,7 +105,7 @@ manifests: ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefin
 
 .PHONY: generate-chart
 generate-chart: ## Generate Helm chart values schema.
-	$(HELM_SCHEMA)
+	$(HELM_SCHEMA) --values charts/podlock/values.yaml --output charts/podlock/values.schema.json
 
 .PHONY: docs
 docs:

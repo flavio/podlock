@@ -1,232 +1,117 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "additionalProperties": false,
-  "properties": {
-    "controller": {
-      "additionalProperties": false,
-      "properties": {
-        "image": {
-          "additionalProperties": false,
-          "properties": {
-            "pullPolicy": {
-              "default": "IfNotPresent",
-              "title": "pullPolicy",
-              "type": "string"
-            },
-            "repository": {
-              "default": "flavio/podlock/controller",
-              "title": "repository",
-              "type": "string"
-            },
-            "tag": {
-              "default": "v0.0.1",
-              "title": "tag",
-              "type": "string"
-            }
-          },
-          "required": [
-            "repository",
-            "tag",
-            "pullPolicy"
-          ],
-          "title": "image",
-          "type": "object"
-        },
-        "replicas": {
-          "default": 1,
-          "title": "replicas",
-          "type": "integer"
-        },
-        "resources": {
-          "additionalProperties": false,
-          "properties": {
-            "limits": {
-              "additionalProperties": false,
-              "properties": {
-                "cpu": {
-                  "default": "500m",
-                  "title": "cpu",
-                  "type": "string"
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "controller": {
+            "type": "object",
+            "properties": {
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "pullPolicy": {
+                            "type": "string"
+                        },
+                        "repository": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
+                    }
                 },
-                "memory": {
-                  "default": "2Gi",
-                  "title": "memory",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "cpu",
-                "memory"
-              ],
-              "title": "limits",
-              "type": "object"
-            },
-            "requests": {
-              "additionalProperties": false,
-              "properties": {
-                "cpu": {
-                  "default": "250m",
-                  "title": "cpu",
-                  "type": "string"
+                "replicas": {
+                    "type": "integer"
                 },
-                "memory": {
-                  "default": "300Mi",
-                  "title": "memory",
-                  "type": "string"
+                "resources": {
+                    "type": "object",
+                    "properties": {
+                        "limits": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "requests": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
                 }
-              },
-              "required": [
-                "cpu",
-                "memory"
-              ],
-              "title": "requests",
-              "type": "object"
             }
-          },
-          "required": [
-            "limits",
-            "requests"
-          ],
-          "title": "resources",
-          "type": "object"
+        },
+        "global": {
+            "type": "object",
+            "properties": {
+                "cattle": {
+                    "type": "object",
+                    "properties": {
+                        "systemDefaultRegistry": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "nri": {
+            "type": "object",
+            "properties": {
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "pullPolicy": {
+                            "type": "string"
+                        },
+                        "repository": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "logLevel": {
+                    "type": "string"
+                },
+                "resources": {
+                    "type": "object",
+                    "properties": {
+                        "limits": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "requests": {
+                            "type": "object",
+                            "properties": {
+                                "cpu": {
+                                    "type": "string"
+                                },
+                                "memory": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
-      },
-      "required": [
-        "image",
-        "replicas",
-        "resources"
-      ],
-      "title": "controller",
-      "type": "object"
-    },
-    "global": {
-      "additionalProperties": false,
-      "description": "NOTE: This section is used to configure the global settings for the podlock chart.",
-      "properties": {
-        "cattle": {
-          "additionalProperties": false,
-          "properties": {
-            "systemDefaultRegistry": {
-              "default": "ghcr.io",
-              "title": "systemDefaultRegistry",
-              "type": "string"
-            }
-          },
-          "required": [
-            "systemDefaultRegistry"
-          ],
-          "title": "cattle",
-          "type": "object"
-        }
-      },
-      "required": [
-        "cattle"
-      ],
-      "title": "global",
-      "type": "object"
-    },
-    "nri": {
-      "additionalProperties": false,
-      "properties": {
-        "image": {
-          "additionalProperties": false,
-          "properties": {
-            "pullPolicy": {
-              "default": "IfNotPresent",
-              "title": "pullPolicy",
-              "type": "string"
-            },
-            "repository": {
-              "default": "flavio/podlock/nri",
-              "title": "repository",
-              "type": "string"
-            },
-            "tag": {
-              "default": "v0.0.1",
-              "title": "tag",
-              "type": "string"
-            }
-          },
-          "required": [
-            "repository",
-            "tag",
-            "pullPolicy"
-          ],
-          "title": "image",
-          "type": "object"
-        },
-        "logLevel": {
-          "default": "info",
-          "title": "logLevel",
-          "type": "string"
-        },
-        "resources": {
-          "additionalProperties": false,
-          "properties": {
-            "limits": {
-              "additionalProperties": false,
-              "properties": {
-                "cpu": {
-                  "default": "500m",
-                  "title": "cpu",
-                  "type": "string"
-                },
-                "memory": {
-                  "default": "1Gi",
-                  "title": "memory",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "cpu",
-                "memory"
-              ],
-              "title": "limits",
-              "type": "object"
-            },
-            "requests": {
-              "additionalProperties": false,
-              "properties": {
-                "cpu": {
-                  "default": "250m",
-                  "title": "cpu",
-                  "type": "string"
-                },
-                "memory": {
-                  "default": "300Mi",
-                  "title": "memory",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "cpu",
-                "memory"
-              ],
-              "title": "requests",
-              "type": "object"
-            }
-          },
-          "required": [
-            "limits",
-            "requests"
-          ],
-          "title": "resources",
-          "type": "object"
-        }
-      },
-      "required": [
-        "image",
-        "logLevel",
-        "resources"
-      ],
-      "title": "nri",
-      "type": "object"
     }
-  },
-  "required": [
-    "global",
-    "controller",
-    "nri"
-  ],
-  "type": "object"
 }
