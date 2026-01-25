@@ -1,0 +1,32 @@
+suite: VAP Pod Profile Validation Tests
+templates:
+  - vap/pod-profile-validation.yaml
+tests:
+  - name: VAP resources should be created when enabled
+    set:
+      vap:
+        enabled: true
+    asserts:
+      - isKind:
+          of: ValidatingAdmissionPolicy
+        documentIndex: 0
+      - isKind:
+          of: ValidatingAdmissionPolicyBinding
+        documentIndex: 1
+      - matchRegex:
+          path: metadata.name
+          pattern: ".*-podlock-pod-profile-validation$"
+        documentIndex: 0
+      - matchRegex:
+          path: metadata.name
+          pattern: ".*-podlock-pod-profile-validation-binding$"
+        documentIndex: 1
+
+  - name: VAP resources should not be created when disabled
+    set:
+      vap:
+        enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+

@@ -15,13 +15,9 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/features"
 	"sigs.k8s.io/e2e-framework/third_party/helm"
 
-	v1alpha1 "github.com/flavio/podlock/api/v1alpha1"
+	"github.com/flavio/podlock/api/v1alpha1"
 	"github.com/flavio/podlock/pkg/constants"
 )
-
-// TODO: currently this test is a bit of a repeting of the controller tests.
-// This is done to have a starting point for e2e tests. In the future, we can
-// expand this with more complex scenarios and remove some of the overlapping tests.
 
 func TestLandlockProfileCreation(t *testing.T) {
 	releaseName := "podlock"

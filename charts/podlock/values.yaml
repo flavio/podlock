@@ -34,3 +34,8 @@ nri:
     requests:
       cpu: 250m
       memory: 300Mi
+
+# ValidatingAdmissionPolicy for Pod profile validation
+# Requires Kubernetes 1.25+ for ValidatingAdmissionPolicy support
+vap:
+  enabled: true
