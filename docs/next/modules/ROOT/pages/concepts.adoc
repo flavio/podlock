@@ -1,0 +1,39 @@
+= Concepts
+:navtitle: Key Concepts
+
+== Profile Binding to Pods
+
+Profiles cannot be applied to already running Pods. The restrictions are applied
+when the container process is started, so Pods must be created after the profile
+is defined and the label is set.
+
+Moreover, removing or changing the `podlock.kubewarden.io/profile` label on a running
+Pod cannot be done.
+
+This is enforced by a https://kubernetes.io/docs/reference/access-authn-authz/validating-admission-policy/[Validating Admission Policy].
+
+== Container Implications
+
+When a LandlockProfile is applied to a Pod:
+
+* **Containers listed in the profile**: Only the containers explicitly specified in the `spec.profilesByContainer` section of the LandlockProfile will have Landlock restrictions applied. The binaries listed for each container will be intercepted and restricted according to the profile.
+
+* **Containers not listed in the profile**: Containers in the Pod that are not mentioned in the profile will run with no Landlock restrictions applied. This allows you to selectively apply profiles to specific containers within a multi-container Pod.
+
+* **Binaries not listed in the profile**: Within a container that has a profile, any binary not explicitly listed in the profile will run with no restrictions. However, if an unrestricted binary is invoked by a restricted binary, it will inherit the restrictions of the invoking binary.
+
+* **Other pods in the cluster**: Applying a profile to one Pod has no effect on other Pods or Pods running in other namespaces. Each Pod's restrictions are isolated and independent.
+
+== Profile Lifecycle and Deletion Safety
+
+LandlockProfile resources are protected by a finalizer that prevents accidental deletion while they are in use:
+
+* **In-use profiles**: If a LandlockProfile is referenced by a running Pod (via the `podlock.kubewarden.io/profile` label), attempting to delete the profile will not immediately remove it. Instead, the profile will enter a "deletion pending" state with a `DeletionTimestamp` set.
+
+* **Finalizer protection**: The profile's finalizer will remain in place until all Pods referencing the profile have been deleted.
+
+* **Automatic cleanup**: Once all Pods that reference the profile are deleted, the finalizer is removed and the profile is garbage collected.
+
+* **Unreferenced profile deletion**: Profiles that are not referenced by any Pods can be deleted immediately without waiting for finalizer cleanup.
+
+This safety mechanism ensures that security policies cannot be accidentally removed while they are actively protecting running containers.

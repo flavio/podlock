@@ -1,0 +1,52 @@
+{{- if .Values.vap.enabled }}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  labels:
+    {{- include "podlock.labels" . | nindent 4 }}
+    app.kubernetes.io/component: vap
+  name: {{ include "podlock.fullname" . }}-pod-profile-validation
+  annotations:
+    description: "Validates that podlock.kubewarden.io/profile label cannot be added, removed, or changed during Pod updates"
+spec:
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      operations: ["UPDATE"]
+      resources: ["pods"]
+  variables:
+    - name: new_profile
+      expression: |
+        has(object.metadata.labels) && 'podlock.kubewarden.io/profile' in object.metadata.labels 
+        ? object.metadata.labels['podlock.kubewarden.io/profile'] 
+        : null
+    - name: old_profile
+      expression: |
+        has(oldObject.metadata.labels) && 'podlock.kubewarden.io/profile' in oldObject.metadata.labels 
+        ? oldObject.metadata.labels['podlock.kubewarden.io/profile'] 
+        : null
+  validations:
+    - expression: "variables.new_profile == variables.old_profile"
+      message: "The label 'podlock.kubewarden.io/profile' is immutable. You cannot add, remove, or change its value."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  labels:
+    {{- include "podlock.labels" . | nindent 4 }}
+    app.kubernetes.io/component: vap
+  name: {{ include "podlock.fullname" . }}-pod-profile-validation-binding
+  annotations:
+    description: "Binds pod profile validation policy to all Pods"
+spec:
+  policyName: {{ include "podlock.fullname" . }}-pod-profile-validation
+  validationActions: [Deny]
+  matchResources:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      operations: ["UPDATE"]
+      resources: ["pods"]
+{{- end }}
