@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>PodLock :: PodLock</title>
+    <title>Concepts :: PodLock</title>
     <meta name="generator" content="Antora 3.1.14">
     <link rel="stylesheet" href="../../_/css/site.css">
   </head>
@@ -43,7 +43,7 @@
 <ul class="nav-list">
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
-  <li class="nav-item is-current-page" data-depth="1">
+  <li class="nav-item" data-depth="1">
     <a class="nav-link" href="index.html">Home</a>
   </li>
   <li class="nav-item" data-depth="1">
@@ -52,7 +52,7 @@
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="architecture.html">Architecture Overview</a>
   </li>
-  <li class="nav-item" data-depth="1">
+  <li class="nav-item is-current-page" data-depth="1">
     <a class="nav-link" href="concepts.html">Key Concepts</a>
   </li>
   <li class="nav-item" data-depth="1">
@@ -92,24 +92,24 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="index.html">PodLock</a></li>
-    <li><a href="index.html">Home</a></li>
+    <li><a href="concepts.html">Key Concepts</a></li>
   </ul>
 </nav>
 <div class="page-versions">
   <button class="version-menu-toggle" title="Show other versions of page">next</button>
   <div class="version-menu">
-    <a class="version is-current" href="index.html">next</a>
-    <a class="version" href="../v0.0.1/index.html">v0.0.1</a>
+    <a class="version is-current" href="concepts.html">next</a>
+    <a class="version is-missing" href="../v0.0.1/index.html">v0.0.1</a>
   </div>
 </div>
-<div class="edit-this-page"><a href="https://github.com/flavio/podlock/edit/main/docs/next/modules/ROOT/pages/index.adoc">Edit this Page</a></div>
+<div class="edit-this-page"><a href="https://github.com/flavio/podlock/edit/main/docs/next/modules/ROOT/pages/concepts.adoc">Edit this Page</a></div>
 </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-  <h1 class="page">PodLock</h1>
+  <h1 class="page">Concepts</h1>
 
   <div class="admonitionblock warning">
     <table>
@@ -132,58 +132,73 @@
   </div>
 
 
-  <div class="paragraph">
-<p>PodLock restricts process execution and file access in Kubernetes Pods using the
-<a href="https://landlock.io/">Landlock</a> Linux Kernel LSM.</p>
+  <div class="sect1">
+<h2 id="_profile_binding_to_pods"><a class="anchor" href="#_profile_binding_to_pods"></a>Profile Binding to Pods</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Profiles cannot be applied to already running Pods. The restrictions are applied
+when the container process is started, so Pods must be created after the profile
+is defined and the label is set.</p>
 </div>
 <div class="paragraph">
-<p>Kubernetes users can define PodLock profiles that specify restrictions for processes running inside containers.
-Each profile describes the restrictions to apply to individual binaries within a container.
-File system access (read, write, and execute permissions) of individual binaries within a container
-can be controlled by PodLock.</p>
+<p>Moreover, removing or changing the <code>podlock.kubewarden.io/profile</code> label on a running
+Pod cannot be done.</p>
 </div>
 <div class="paragraph">
-<p>For example, given the following profile:</p>
+<p>This is enforced by a <a href="https://kubernetes.io/docs/reference/access-authn-authz/validating-admission-policy/">Validating Admission Policy</a>.</p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: podlock.kubewarden.io/v1alpha1
-kind: LandlockProfile
-metadata:
-  name: nginx
-  namespace: default
-spec:
-  profilesByContainer:
-    nginx:
-      "/usr/sbin/nginx":
-        readExec:
-          - /lib
-          - /lib64
-        readOnly:
-          - /usr/share/nginx
-        readWrite:
-          - /tmp</code></pre>
 </div>
+</div>
+<div class="sect1">
+<h2 id="_container_implications"><a class="anchor" href="#_container_implications"></a>Container Implications</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When a LandlockProfile is applied to a Pod:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Containers listed in the profile</strong>: Only the containers explicitly specified in the <code>spec.profilesByContainer</code> section of the LandlockProfile will have Landlock restrictions applied. The binaries listed for each container will be intercepted and restricted according to the profile.</p>
+</li>
+<li>
+<p><strong>Containers not listed in the profile</strong>: Containers in the Pod that are not mentioned in the profile will run with no Landlock restrictions applied. This allows you to selectively apply profiles to specific containers within a multi-container Pod.</p>
+</li>
+<li>
+<p><strong>Binaries not listed in the profile</strong>: Within a container that has a profile, any binary not explicitly listed in the profile will run with no restrictions. However, if an unrestricted binary is invoked by a restricted binary, it will inherit the restrictions of the invoking binary.</p>
+</li>
+<li>
+<p><strong>Other pods in the cluster</strong>: Applying a profile to one Pod has no effect on other Pods or Pods running in other namespaces. Each Pod&#8217;s restrictions are isolated and independent.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_profile_lifecycle_and_deletion_safety"><a class="anchor" href="#_profile_lifecycle_and_deletion_safety"></a>Profile Lifecycle and Deletion Safety</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>LandlockProfile resources are protected by a finalizer that prevents accidental deletion while they are in use:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>In-use profiles</strong>: If a LandlockProfile is referenced by a running Pod (via the <code>podlock.kubewarden.io/profile</code> label), attempting to delete the profile will not immediately remove it. Instead, the profile will enter a "deletion pending" state with a <code>DeletionTimestamp</code> set.</p>
+</li>
+<li>
+<p><strong>Finalizer protection</strong>: The profile&#8217;s finalizer will remain in place until all Pods referencing the profile have been deleted.</p>
+</li>
+<li>
+<p><strong>Automatic cleanup</strong>: Once all Pods that reference the profile are deleted, the finalizer is removed and the profile is garbage collected.</p>
+</li>
+<li>
+<p><strong>Unreferenced profile deletion</strong>: Profiles that are not referenced by any Pods can be deleted immediately without waiting for finalizer cleanup.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>This profile limits the processes started by <code>/usr/sbin/nginx</code>
-given read and exec rights to the system libraries (<code>/lib</code> and <code>/lib64</code>).</p>
+<p>This safety mechanism ensures that security policies cannot be accidentally removed while they are actively protecting running containers.</p>
 </div>
-<div class="paragraph">
-<p>Access to <code>/usr/share/nginx</code> is going to be read only, while <code>/tmp</code> will also be writable.</p>
 </div>
-<div class="paragraph">
-<p>Landlock works in a "deny all" approach. Because of that, the nginx process will not be
-able to read other parts of the filesystem. It won&#8217;t be able to start other binaries from
-the system, unless they are under the lib directories (to which it has no write access).</p>
-</div>
-<div class="paragraph">
-<p>Landlock does not require any special privileges to work, so PodLock can be used
-to enforce restrictions even on unprivileged Pods running in restricted environments.</p>
-</div>
-<div class="paragraph">
-<p>Profiles can be applied to Pods setting the <code>podlock.kubewarden.io/landlock-profile</code>
-label to the name of the profile to apply.</p>
 </div>
   </article>  </div>
 </main>
