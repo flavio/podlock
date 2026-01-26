@@ -6,11 +6,9 @@ import (
 
 	"github.com/go-logr/logr"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	"github.com/flavio/podlock/api/v1alpha1"
@@ -18,7 +16,7 @@ import (
 
 // SetupRegistryWebhookWithManager registers the webhook for Registry in the manager.
 func SetupRegistryWebhookWithManager(mgr ctrl.Manager) error {
-	err := ctrl.NewWebhookManagedBy(mgr).For(&v1alpha1.LandlockProfile{}).
+	err := ctrl.NewWebhookManagedBy(mgr, &v1alpha1.LandlockProfile{}).
 		WithValidator(&LandlockProfileCustomValidator{
 			logger: mgr.GetLogger().WithName("landlockprofile_validator"),
 		}).
@@ -38,15 +36,10 @@ type LandLockProfileCustomDefaulter struct {
 	logger logr.Logger
 }
 
-var _ webhook.CustomDefaulter = &LandLockProfileCustomDefaulter{}
+var _ admission.Defaulter[*v1alpha1.LandlockProfile] = &LandLockProfileCustomDefaulter{}
 
-// Default implements admission.CustomDefaulter.
-func (d *LandLockProfileCustomDefaulter) Default(_ context.Context, obj runtime.Object) error {
-	profile, ok := obj.(*v1alpha1.LandlockProfile)
-	if !ok {
-		return fmt.Errorf("expected a LandlockProfile object but got %T", obj)
-	}
-
+// Default implements admission.Defaulter.
+func (d *LandLockProfileCustomDefaulter) Default(_ context.Context, profile *v1alpha1.LandlockProfile) error {
 	// Check if the profile is being deleted
 	if !profile.DeletionTimestamp.IsZero() {
 		// No need to default a deleting object
@@ -70,14 +63,10 @@ type LandlockProfileCustomValidator struct {
 	logger logr.Logger
 }
 
-var _ webhook.CustomValidator = &LandlockProfileCustomValidator{}
+var _ admission.Validator[*v1alpha1.LandlockProfile] = &LandlockProfileCustomValidator{}
 
-// ValidateCreate implements webhook.CustomValidator so a webhook will be registered for the type LandlockProfile.
-func (v *LandlockProfileCustomValidator) ValidateCreate(_ context.Context, obj runtime.Object) (admission.Warnings, error) {
-	profile, ok := obj.(*v1alpha1.LandlockProfile)
-	if !ok {
-		return nil, fmt.Errorf("expected a LandlockProfile object but got %T", obj)
-	}
+// ValidateCreate implements admission.Validator so a webhook will be registered for the type LandlockProfile.
+func (v *LandlockProfileCustomValidator) ValidateCreate(_ context.Context, profile *v1alpha1.LandlockProfile) (admission.Warnings, error) {
 	v.logger.Info("Validation for LandlockProfile upon creation", "name", profile.GetName())
 
 	allErrs := v.validateProfile(profile)
@@ -93,12 +82,9 @@ func (v *LandlockProfileCustomValidator) ValidateCreate(_ context.Context, obj r
 	return nil, nil
 }
 
-// ValidateUpdate implements webhook.CustomValidator so a webhook will be registered for the type LandlockProfile.
-func (v *LandlockProfileCustomValidator) ValidateUpdate(_ context.Context, _, newObj runtime.Object) (admission.Warnings, error) {
-	profile, ok := newObj.(*v1alpha1.LandlockProfile)
-	if !ok {
-		return nil, fmt.Errorf("expected a LandlockProfile object for the newObj but got %T", newObj)
-	}
+// ValidateUpdate implements admission.Validator so a webhook will be registered for the type LandlockProfile.
+func (v *LandlockProfileCustomValidator) ValidateUpdate(_ context.Context, _, newObj *v1alpha1.LandlockProfile) (admission.Warnings, error) {
+	profile := newObj
 	v.logger.Info("Validation for LandlockProfile upon update", "name", profile.GetName())
 
 	allErrs := v.validateProfile(profile)
@@ -135,12 +121,8 @@ func (v *LandlockProfileCustomValidator) validateProfile(profile *v1alpha1.Landl
 	return allErrs
 }
 
-// ValidateDelete implements webhook.CustomValidator so a webhook will be registered for the type LandlockProfile.
-func (v *LandlockProfileCustomValidator) ValidateDelete(_ context.Context, obj runtime.Object) (admission.Warnings, error) {
-	profile, ok := obj.(*v1alpha1.LandlockProfile)
-	if !ok {
-		return nil, fmt.Errorf("expected a LandlockProfile object but got %T", obj)
-	}
+// ValidateDelete implements admission.Validator so a webhook will be registered for the type LandlockProfile.
+func (v *LandlockProfileCustomValidator) ValidateDelete(_ context.Context, profile *v1alpha1.LandlockProfile) (admission.Warnings, error) {
 	v.logger.Info("Validation for LandlockProfile upon deletion", "name", profile.GetName())
 
 	return nil, nil
