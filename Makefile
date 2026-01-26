@@ -111,6 +111,20 @@ generate-chart: ## Generate Helm chart values schema.
 docs:
 	npx antora antora-playbook.yml
 
+.PHONY: cut-docs-release
+cut-docs-release:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "VERSION must be set. Example: make cut-docs-release VERSION=v0.1.0"; \
+		exit 1; \
+	fi
+	@echo "Creating documentation release for $(VERSION)"
+	cp -r docs/next docs/$(VERSION)
+	yq -i '.version = "$(VERSION)"' docs/$(VERSION)/antora.yml
+	yq -i 'del(.prerelease)' docs/$(VERSION)/antora.yml
+	@echo "Updating antora-playbook.yml"
+	yq -i '.content.sources += [{"url": ".", "start_path": "docs/$(VERSION)", "branches": "HEAD"}]' antora-playbook.yml
+	@echo "Documentation release created. Please review changes and commit."
+
 ##@ Dependencies
 
 ## Location to install dependencies to
