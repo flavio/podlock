@@ -1,0 +1,197 @@
+= Architecture
+:navtitle: Architecture Overview
+
+PodLock relies on several components to provide https://landlock.io/[Landlock-based]
+security policies for Kubernetes pods.
+
+At the bottom level, PodLock uses the Linux Landlock LSM (Linux Security Module) to enforce security policies at the kernel level.
+Landlock allows unprivileged processes to create and enforce security policies that
+restrict their own capabilities, providing a powerful mechanism for sandboxing applications.
+
+PodLock consists of the following main components:
+
+* **LandlockProfile Custom Resource Definition (CRD)**: This CRD defines the schema for Landlock profiles in Kubernetes.
+  Users can create LandlockProfile resources to specify the security policies they want to apply to their pods.
+* **PodLock Controller**: This is a Kubernetes controller. The controller is lightweight, it handles
+  finalizers for LandlockProfile resources and exposes validation and mutation webhooks for
+  LandlockProfile resources and for Pods.
+* **Node Resource Interface (NRI) Plugin**: PodLock includes a https://github.com/containerd/nri/[NRI plugin] that integrates with container runtimes
+  supporting the NRI specification. The NRI plugin is responsible for applying the Landlock profiles
+  to the pods at runtime, ensuring that the specified security policies are enforced when the pods are created.
+* **`swap-oci-hook`**: This is an https://github.com/opencontainers/runtime-spec/blob/main/config.md#posix-platform-hooks[OCI (Open Container Initiative) hook]
+  that is used to prepare the filesystem of the container before it starts.
+* **`seal`**: This is a binary that is injected into each container by the NRI plugin.
+  The `seal` binary is responsible for applying the Landlock policies.
+
+The next sections provide more details about each of these components.
+
+== LandlockProfile Custom Resource Definition (CRD)
+
+A LandlockProfile resource defines a set of Landlock policies to be applied to containers in a pod. Each profile specifies the restrictions for individual binaries within the container,
+including file system access permissions (read, write, and execute).
+
+[source,yaml]
+----
+apiVersion: podlock.kubewarden.io/v1alpha1
+kind: LandlockProfile
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  profilesByContainer:
+    nginx:
+      "/usr/sbin/nginx":
+        readExec:
+          - /lib
+          - /lib64
+        readOnly:
+          - /usr/share/nginx
+        readWrite:
+          - /tmp
+----
+
+Containers that are not explicitly listed in a LandlockProfile will not have any Landlock restrictions applied.
+
+Binaries that are not listed in the profile for a container have no restrictions applied to them,
+unless they have been invoked by a restricted binary. In that case, they inherit the restrictions of the invoking binary.
+
+== PodLock Controller
+
+The PodLock Controller is responsible for managing the lifecycle of LandlockProfile resources.
+
+It ensures that profiles can be deleted only when they are not in use by any pods,
+preventing accidental removal of active security policies.
+
+The controller also exposes validation and mutation webhooks for LandlockProfile resources and for Pods.
+
+== Node Resource Interface (NRI) Plugin
+
+The NRI plugin is a critical component that ensures Landlock profiles are applied to pods at runtime.
+
+At startup, the plugin copies a set of helper binaries to the host filesystem under `/opt/podlock`
+directory.
+
+The NRI plugin runs on each node of the cluster as a DaemonSet. It communicates 
+with the container runtime engine (containerd or CRI-O) via the NRI socket and listens for pod creation
+and deletion events.
+
+IMPORTANT: Only containerd and CRI-O are supported as container runtime engines.
+Recent versions of both containerd (2.0+) and CRI-O support NRI out of the box.
+
+Every time a container is about to be created, the PodLock NRI plugin is invoked by
+the container runtime engine.
+
+The plugin checks if the pod has any LandlockProfile resources associated with it
+by looking for the existence of the `podlock.kubewarden.io/landlock-profiles` label.
+If the label is present, the NRI plugin retrieves the specified LandlockProfile resource
+with the given name. Since a LandlockProfile resource can specify different policies for
+different containers, the NRI plugin selects the profile that matches the name of
+the container being created.
+
+If the LandlockProfile doesn't provide any policy for the container being created,
+no adjustments are made to the container and it is created as usual.
+
+Otherwise, the NRI plugin creates a list of container adjustments to be made. These adjustments
+are modifications to the container configuration that will be applied by the runtime before
+the container starts:
+
+* Mount the `seal` binary from host filesystem into the container as a read-only
+  bind mount under `/.podlock/bin/seal`.
+* Mount the `profiles.json` file (containing the Landlock policies for this container)
+  from the host into the container as a read-only bind mount under `/.podlock/profiles.json`.
+* For each binary listed in the LandlockProfile for the container:
+  ** Create an empty file on the host under `/var/run/podlock/<pod-id>/<container-name>/swapped-binaries/<original path of the binary>/<binary>`.
+     This empty file serves as a placeholder that will later be overmounted with the original binary,
+     creating a backup that `seal` can execute.
+  ** Mount the empty file into the container as a read-only bind mount under
+     `/.podlock/swapped-binaries/<original path of the binary>/<binary>`.
+  ** Register an https://github.com/opencontainers/runtime-spec/blob/main/config.md#posix-platform-hooks[OCI hook]
+     that invokes the `swap-oci-hook` binary during the `createContainer` phase. This hook
+     will perform the overmounting operations described in the next section.
+
+The adjustments are then returned to the container runtime engine, which applies
+them before starting the container.
+
+The NRI plugin is also invoked when a pod is deleted. In this case, the plugin
+cleans up any temporary files created for the pod under `/var/run/podlock/`.
+
+== OCI hook: `swap-oci-hook`
+
+During the container creation phase, the OCI hook registered by the NRI plugin
+is invoked by the OCI runtime (like runC) before the container process starts.
+
+The `swap-oci-hook` binary is responsible for overmounting the binaries listed
+in the LandlockProfile for the container, effectively intercepting their execution.
+
+The hook performs two overmount operations for each restricted binary:
+
+1. **Backup the original binary**: The empty file previously mounted under `/.podlock/swapped-binaries/<path>/<binary>`
+   is overmounted with the original binary from its normal location. This creates a backup copy
+   that `seal` can later execute.
+
+2. **Replace the binary with seal**: The original binary location is overmounted with the `seal` binary
+   from `/.podlock/bin/seal`. This means that when the application tries to execute the binary,
+   it actually runs `seal` instead.
+
+[NOTE]
+.Example: Restricting /usr/bin/curl
+====
+Let's assume the LandlockProfile specifies restrictions for `/usr/bin/curl`.
+
+Initial state (after NRI adjustments):
+
+* `/usr/bin/curl`: original curl binary (unchanged.so far).
+* `/.podlock/swapped-binaries/usr/bin/curl/curl`: empty file mounted from host.
+
+First overmount (backup original):
+
+* The hook overmounts the empty file at `/.podlock/swapped-binaries/usr/bin/curl/curl`
+  with the content of `/usr/bin/curl`, creating a backup of the original binary.
+
+Second overmount (replace with seal):
+
+* The hook overmounts `/usr/bin/curl` with `/.podlock/bin/seal`.
+
+Final state:
+
+* `/usr/bin/curl`: actually points to the `seal` binary.
+* `/.podlock/swapped-binaries/usr/bin/curl/curl`: contains the original curl binary.
+
+When the application invokes `/usr/bin/curl`, it actually runs `seal`, which will apply
+Landlock restrictions and then execute the real curl from the backup location.
+====
+
+Some containers make use of `busybox` or similar multi-call binaries that provide
+multiple commands from a single binary through symlinks. For example, `/bin/cat`
+is a symlink to `/bin/busybox`, which contains the actual implementation of `cat`.
+
+In this case, the `swap-oci-hook` overmounts only the symlink (e.g., `/bin/cat`) with `seal`,
+leaving the target multi-call binary (`/bin/busybox`) unchanged.
+
+== The `seal` binary
+
+The `seal` binary is responsible for applying the Landlock policies when a restricted binary
+is executed.
+
+When a restricted binary is invoked (e.g., `/usr/bin/curl`), the `seal` binary is actually started
+instead, since it has overmounted the original binary.
+
+The `seal` binary determines which binary was intended to be executed by examining the path
+it was invoked from. For example, if invoked as `/usr/bin/curl`, it knows to
+look for the curl policy and execute the real curl binary from
+`/.podlock/swapped-binaries/usr/bin/curl/curl`.
+
+The `seal` binary reads the Landlock profile for the binary from the `/.podlock/profiles.json` file
+that was mounted into the container by the NRI plugin.
+
+The `seal` binary then applies the Landlock restrictions specified in the profile
+by using the Landlock API provided by the Linux kernel. This configures the kernel-level
+restrictions that will be enforced for the process.
+
+After applying the Landlock restrictions, the `seal` binary uses the `execve` system call
+to replace its own process image with the original binary from the backup location
+(e.g., `/.podlock/swapped-binaries/usr/bin/curl/curl`), effectively starting the intended application
+with the enforced Landlock policies in place.
+
+From this point forward, the process runs as the original binary but with Landlock restrictions
+active, limiting its file system access and execution capabilities as specified in the profile.

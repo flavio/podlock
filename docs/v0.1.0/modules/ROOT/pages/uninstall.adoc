@@ -1,0 +1,42 @@
+= Uninstall
+:navtitle: Uninstall Guide
+
+This guide walks you through completely removing PodLock from your Kubernetes cluster.
+
+== Uninstall the Helm chart
+
+Remove the PodLock Helm release:
+
+[source,bash]
+----
+helm uninstall --namespace podlock podlock
+----
+
+== Remove Custom Resource Definitions
+
+WARNING: Deleting the CRDs will also delete all LandlockProfile resources in your cluster.
+
+[source,bash]
+----
+kubectl delete crd landlockprofiles.podlock.kubewarden.io
+----
+
+== Delete the namespace
+
+Remove the PodLock namespace:
+
+[source,bash]
+----
+kubectl delete ns podlock
+----
+
+== Clean up node-level resources (optional)
+
+The PodLock NRI plugin stores helper binaries on each node in `/opt/podlock`.
+If you want to completely remove all traces of PodLock, run the following command
+on each node:
+
+[source,bash]
+----
+sudo rm -rf /opt/podlock
+----

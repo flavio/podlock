@@ -1,0 +1,47 @@
+= PodLock
+:navtitle: Home
+
+PodLock restricts process execution and file access in Kubernetes Pods using the
+https://landlock.io/[Landlock] Linux Kernel LSM.
+
+Kubernetes users can define PodLock profiles that specify restrictions for processes running inside containers.
+Each profile describes the restrictions to apply to individual binaries within a container.
+File system access (read, write, and execute permissions) of individual binaries within a container
+can be controlled by PodLock.
+
+For example, given the following profile:
+
+[source,yaml]
+----
+apiVersion: podlock.kubewarden.io/v1alpha1
+kind: LandlockProfile
+metadata:
+  name: nginx
+  namespace: default
+spec:
+  profilesByContainer:
+    nginx:
+      "/usr/sbin/nginx":
+        readExec:
+          - /lib
+          - /lib64
+        readOnly:
+          - /usr/share/nginx
+        readWrite:
+          - /tmp
+----
+
+This profile limits the processes started by `/usr/sbin/nginx`
+given read and exec rights to the system libraries (`/lib` and `/lib64`).
+
+Access to `/usr/share/nginx` is going to be read only, while `/tmp` will also be writable.
+
+Landlock works in a "deny all" approach. Because of that, the nginx process will not be
+able to read other parts of the filesystem. It won't be able to start other binaries from
+the system, unless they are under the lib directories (to which it has no write access).
+
+Landlock does not require any special privileges to work, so PodLock can be used
+to enforce restrictions even on unprivileged Pods running in restricted environments.
+
+Profiles can be applied to Pods setting the `podlock.kubewarden.io/landlock-profile`
+label to the name of the profile to apply.

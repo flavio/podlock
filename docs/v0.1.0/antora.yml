@@ -1,0 +1,5 @@
+name: podlock-docs
+title: PodLock
+version: v0.1.0
+nav:
+  - modules/ROOT/nav.adoc
