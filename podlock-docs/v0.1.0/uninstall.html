@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>PodLock :: PodLock</title>
+    <title>Uninstall :: PodLock</title>
     <meta name="generator" content="Antora 3.1.14">
     <link rel="stylesheet" href="../../_/css/site.css">
   </head>
@@ -33,7 +33,7 @@
     </div>
   </nav>
 </header><div class="body">
-<div class="nav-container" data-component="podlock-docs" data-version="v0.0.1">
+<div class="nav-container" data-component="podlock-docs" data-version="v0.1.0">
   <aside class="nav">
     <div class="panels">
 <div class="nav-panel-menu is-active" data-panel="menu">
@@ -43,17 +43,20 @@
 <ul class="nav-list">
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
-  <li class="nav-item is-current-page" data-depth="1">
+  <li class="nav-item" data-depth="1">
     <a class="nav-link" href="index.html">Home</a>
   </li>
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="quickstart.html">Quickstart Guide</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="uninstall.html">Uninstall Guide</a>
+    <a class="nav-link" href="architecture.html">Architecture Overview</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="architecture.html">Architecture Overview</a>
+    <a class="nav-link" href="concepts.html">Key Concepts</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="uninstall.html">Uninstall Guide</a>
   </li>
 </ul>
   </li>
@@ -63,20 +66,20 @@
 <div class="nav-panel-explore" data-panel="explore">
   <div class="context">
     <span class="title">PodLock</span>
-    <span class="version">v0.0.1</span>
+    <span class="version">v0.1.0</span>
   </div>
   <ul class="components">
     <li class="component is-current">
-      <div class="title"><a href="../v0.1.0/index.html">PodLock</a></div>
+      <div class="title"><a href="index.html">PodLock</a></div>
       <ul class="versions">
         <li class="version">
           <a href="../next/index.html">next</a>
         </li>
-        <li class="version is-latest">
-          <a href="../v0.1.0/index.html">v0.1.0</a>
+        <li class="version is-current is-latest">
+          <a href="index.html">v0.1.0</a>
         </li>
-        <li class="version is-current">
-          <a href="index.html">v0.0.1</a>
+        <li class="version">
+          <a href="../v0.0.1/index.html">v0.0.1</a>
         </li>
       </ul>
     </li>
@@ -88,80 +91,101 @@
 <main class="article">
 <div class="toolbar" role="navigation">
 <button class="nav-toggle"></button>
-  <a href="../v0.1.0/index.html" class="home-link"></a>
+  <a href="index.html" class="home-link"></a>
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="index.html">PodLock</a></li>
-    <li><a href="index.html">Home</a></li>
+    <li><a href="uninstall.html">Uninstall Guide</a></li>
   </ul>
 </nav>
 <div class="page-versions">
-  <button class="version-menu-toggle" title="Show other versions of page">v0.0.1</button>
+  <button class="version-menu-toggle" title="Show other versions of page">v0.1.0</button>
   <div class="version-menu">
-    <a class="version" href="../next/index.html">next</a>
-    <a class="version" href="../v0.1.0/index.html">v0.1.0</a>
-    <a class="version is-current" href="index.html">v0.0.1</a>
+    <a class="version" href="../next/uninstall.html">next</a>
+    <a class="version is-current" href="uninstall.html">v0.1.0</a>
+    <a class="version" href="../v0.0.1/uninstall.html">v0.0.1</a>
   </div>
 </div>
-<div class="edit-this-page"><a href="https://github.com/flavio/podlock/edit/main/docs/v0.0.1/modules/ROOT/pages/index.adoc">Edit this Page</a></div>
+<div class="edit-this-page"><a href="https://github.com/flavio/podlock/edit/main/docs/v0.1.0/modules/ROOT/pages/uninstall.adoc">Edit this Page</a></div>
 </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-  <h1 class="page">PodLock</h1>
+  <h1 class="page">Uninstall</h1>
 
 
 
-  <div class="paragraph">
-<p>PodLock restricts process execution and file access in Kubernetes Pods using the
-<a href="https://landlock.io/">Landlock</a> Linux Kernel LSM.</p>
-</div>
+  <div id="preamble">
+<div class="sectionbody">
 <div class="paragraph">
-<p>Kubernetes users can define PodLock profiles that specify restrictions for processes running inside containers.
-Each profile describes the restrictions to apply to individual binaries within a container.
-File system access (read, write, and execute permissions) of individual binaries within a container
-can be controlled by PodLock.</p>
+<p>This guide walks you through completely removing PodLock from your Kubernetes cluster.</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_uninstall_the_helm_chart"><a class="anchor" href="#_uninstall_the_helm_chart"></a>Uninstall the Helm chart</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>For example, given the following profile:</p>
+<p>Remove the PodLock Helm release:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: podlock.kubewarden.io/v1alpha1
-kind: LandlockProfile
-metadata:
-  name: nginx
-  namespace: default
-spec:
-  profilesByContainer:
-    nginx:
-      "/usr/sbin/nginx":
-        readExec:
-          - /lib
-          - /lib64
-        readOnly:
-          - /usr/share/nginx
-        readWrite:
-          - /tmp</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm uninstall --namespace podlock podlock</code></pre>
 </div>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_remove_custom_resource_definitions"><a class="anchor" href="#_remove_custom_resource_definitions"></a>Remove Custom Resource Definitions</h2>
+<div class="sectionbody">
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Deleting the CRDs will also delete all LandlockProfile resources in your cluster.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl delete crd landlockprofiles.podlock.kubewarden.io</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_delete_the_namespace"><a class="anchor" href="#_delete_the_namespace"></a>Delete the namespace</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>This profile limits the processes started by <code>/usr/sbin/nginx</code>
-given read and exec rights to the system libraries (<code>/lib</code> and <code>/lib64</code>).</p>
+<p>Remove the PodLock namespace:</p>
 </div>
-<div class="paragraph">
-<p>Access to <code>/usr/share/nginx</code> is going to be read only, while <code>/tmp</code> will also be writable.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl delete ns podlock</code></pre>
 </div>
-<div class="paragraph">
-<p>Landlock works in a "deny all" approach. Because of that, the nginx process will not be
-able to read other parts of the filesystem. It won&#8217;t be able to start other binaries from
-the system, unless they are under the lib directories (to which it has no write access).</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_clean_up_node_level_resources_optional"><a class="anchor" href="#_clean_up_node_level_resources_optional"></a>Clean up node-level resources (optional)</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>Landlock does not require any special privileges to work, so PodLock can be used
-to enforce restrictions even on unprivileged Pods running in restricted environments.</p>
+<p>The PodLock NRI plugin stores helper binaries on each node in <code>/opt/podlock</code>.
+If you want to completely remove all traces of PodLock, run the following command
+on each node:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo rm -rf /opt/podlock</code></pre>
+</div>
+</div>
+</div>
 </div>
   </article>  </div>
 </main>
