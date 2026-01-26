@@ -40,3 +40,9 @@ the system, unless they are under the lib directories (to which it has no write 
 ## Documentation
 
 Full project documentation is available at [https://flavio.github.io/podlock](https://flavio.github.io/podlock).
+
+## Current Limitations
+
+- Updating a profile does not automatically trigger a rollout of the associated pods, potentially requiring manual intervention.
+- Currently, no mechanisms are available to observe or log violations that are enforced by PodLock.
+- A learning mode to assist in profile creation and validation is not implemented yet.
