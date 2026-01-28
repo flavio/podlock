@@ -178,6 +178,7 @@ Example:
 	flagSet.Var(&rxFlag, "rx", "read-exec path")
 	flagSet.Var(&rwFlag, "rw", "read-write paths")
 	flagSet.Var(&rwxFlag, "rwx", "read-write-exec paths")
+	flagSet.StringVar(&logLevel, "log-level", "info", "log level: debug, info, warn, error")
 	flagSet.Var((*LogFormatFlag)(&logFormat), "log-format", "Log format: json or text.")
 	flagSet.BoolVar(&addLinkedLibraries, "ldd", false, "Automatically add linked libraries of the target binary to the profile.")
 
