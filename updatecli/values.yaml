@@ -1,0 +1,5 @@
+github:
+  token: "GITHUB_TOKEN"
+  owner: "GITHUB_REPOSITORY_OWNER"
+  repository: "GITHUB_REPOSITORY_NAME"
+  actor: "GITHUB_ACTOR"
