@@ -1,0 +1,114 @@
+name: "Bump Chart Version and Image Tags"
+pipelineid: "{{ .pipelineid }}"
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: "{{ .github.author }}"
+      email: "{{ .github.email }}"
+      owner: "{{ requiredEnv .github.owner }}"
+      username: "{{ requiredEnv .github.owner }}"
+      repository: "podlock"
+      token: "{{ requiredEnv .github.token }}"
+      branch: "{{ .github.branch }}"
+      commitusingapi: true
+      commitmessage:
+        squash: true
+        type: "chore"
+        title: "update podlock Helm chart"
+        hidecredit: true
+        footers: "Signed-off-by: podlock bot <podlock-bot@users.noreply.github.com>"
+
+sources:
+  releaseTag:
+    name: "Get latest release tag"
+    kind: githubrelease
+    spec:
+      owner: "{{ requiredEnv .github.owner }}"
+      repository: "{{ .github.repository }}"
+      token: "{{ requiredEnv .github.token }}"
+      versionfilter:
+        kind: regex
+        pattern: "^v\\d+\\.\\d+\\.\\d+$"
+
+  nextChartVersion:
+    name: "Calculate next chart version (minor bump)"
+    kind: yaml
+    transformers:
+      - semverinc: minor
+    spec:
+      file: "charts/podlock/Chart.yaml"
+      key: "$.version"
+
+conditions:
+  controllerImage:
+    name: "Ensure controller image exists"
+    kind: dockerimage
+    spec:
+      image: "ghcr.io/flavio/podlock/controller"
+      tag: '{{ source "releaseTag" }}'
+    sourceid: releaseTag
+
+  nriImage:
+    name: "Ensure nri image exists"
+    kind: dockerimage
+    spec:
+      image: "ghcr.io/flavio/podlock/nri"
+      tag: '{{ source "releaseTag" }}'
+    sourceid: releaseTag
+
+targets:
+  updateControllerImageTag:
+    name: "Update controller image tag in values.yaml"
+    kind: yaml
+    spec:
+      file: "charts/podlock/values.yaml"
+      key: "$.controller.image.tag"
+    sourceid: releaseTag
+    scmid: default
+
+  updateNriImageTag:
+    name: "Update nri image tag in values.yaml"
+    kind: yaml
+    spec:
+      file: "charts/podlock/values.yaml"
+      key: "$.nri.image.tag"
+    sourceid: releaseTag
+    scmid: default
+
+  updateAppVersion:
+    name: "Update appVersion in Chart.yaml"
+    kind: yaml
+    spec:
+      file: "charts/podlock/Chart.yaml"
+      key: "$.appVersion"
+    sourceid: releaseTag
+    scmid: default
+
+  updateChartVersion:
+    name: "Bump chart version in Chart.yaml"
+    kind: yaml
+    spec:
+      file: "charts/podlock/Chart.yaml"
+      key: "$.version"
+    sourceid: nextChartVersion
+    scmid: default
+
+actions:
+  default:
+    kind: github/pullrequest
+    scmid: default
+    title: 'chore: bump chart version to {{ source "nextChartVersion" }}'
+    spec:
+      description: |
+        Automated update of Podlock Helm chart.
+
+        - Bumped chart version to {{ source "nextChartVersion" }}
+        - Updated appVersion to {{ source "releaseTag" }}
+        - Updated controller/nri images to {{ source "releaseTag" }}
+      labels:
+        - "kind/chore"
+      automerge: false
+      mergemethod: squash
+      usetitleforautomerge: true

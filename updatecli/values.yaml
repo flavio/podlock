@@ -1,0 +1,9 @@
+github:
+  token: "UPDATECLI_GITHUB_TOKEN"
+  owner: "UPDATECLI_GITHUB_OWNER"
+  repository: "podlock"
+  branch: "main"
+  author: "github-actions[bot]"
+  email: "github-actions[bot]@users.noreply.github.com"
+
+pipelineid: chart_update
