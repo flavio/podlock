@@ -3,6 +3,29 @@ entries:
   podlock:
   - apiVersion: v2
     appVersion: v0.1.0
+    created: "2026-02-02T17:51:08.40967814Z"
+    description: Restrict process execution and file access in Kubernetes Pods with
+      Landlock.
+    digest: daa601ab86a54c7c79689b4e0b838bbcd379f51e45669fa9a286e422dd9a31a6
+    home: https://www.kubewarden.io/
+    icon: https://www.kubewarden.io/images/icon-kubewarden.svg
+    keywords:
+    - Kubewarden
+    - Security
+    - Infrastructure
+    - Pod Security
+    - LSM
+    maintainers:
+    - email: cncf-kubewarden-maintainers@lists.cncf.io
+      name: Kubewarden Maintainers
+      url: https://github.com/orgs/kubewarden/teams/maintainers
+    name: podlock
+    type: application
+    urls:
+    - https://github.com/flavio/podlock/releases/download/podlock-helm-chart-0.1.1/podlock-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: v0.1.0
     created: "2026-01-26T08:28:31.358138197Z"
     description: Restrict process execution and file access in Kubernetes Pods with
       Landlock.
@@ -47,4 +70,4 @@ entries:
     urls:
     - https://github.com/flavio/podlock/releases/download/podlock-helm-chart-0.0.1/podlock-0.0.1.tgz
     version: 0.0.1
-generated: "2026-01-26T08:28:31.358150939Z"
+generated: "2026-02-02T17:51:08.40969408Z"
