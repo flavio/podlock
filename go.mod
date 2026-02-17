@@ -5,7 +5,7 @@ go 1.25.4
 require (
 	github.com/containerd/nri v0.10.0
 	github.com/go-logr/logr v1.4.3
-	github.com/landlock-lsm/go-landlock v0.6.0
+	github.com/landlock-lsm/go-landlock v0.7.0
 	github.com/lmittmann/tint v1.1.3
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
