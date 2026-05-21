@@ -67,7 +67,7 @@ func setupKubeClient(ctx context.Context, logger slog.Logger) (client.Client, er
 
 	go func() {
 		if err = k8sCache.Start(ctx); err != nil {
-			logger.Error("failed to start cache", slog.Any("err", err))
+			logger.ErrorContext(ctx, "failed to start cache", slog.Any("err", err))
 			os.Exit(1)
 		}
 	}()

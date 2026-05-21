@@ -140,9 +140,9 @@ func parseLoaderOutput(output string) []string {
 			continue
 		}
 		// Look for lines with =>
-		if idx := strings.Index(line, "=>"); idx != -1 {
+		if _, after, ok := strings.Cut(line, "=>"); ok {
 			// Format: <libname> => <fullpath> (<address>)
-			rest := strings.TrimSpace(line[idx+2:])
+			rest := strings.TrimSpace(after)
 			parts := strings.Fields(rest)
 			if len(parts) > 0 && strings.HasPrefix(parts[0], "/") {
 				libs = append(libs, parts[0])

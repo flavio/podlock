@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sort"
 	"testing"
 
@@ -245,13 +246,7 @@ func TestFindLdSoBin(t *testing.T) {
 			// Remove files not needed for this test case
 			for _, f := range allFiles {
 				path := filepath.Join(tmpDir, f)
-				shouldExist := false
-				for _, needed := range tt.ldSoBinariesOnDisk {
-					if f == needed {
-						shouldExist = true
-						break
-					}
-				}
+				shouldExist := slices.Contains(tt.ldSoBinariesOnDisk, f)
 				if !shouldExist {
 					_ = os.Remove(path)
 				} else {
