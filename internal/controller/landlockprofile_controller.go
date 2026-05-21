@@ -40,6 +40,7 @@ import (
 // LandlockProfileReconciler reconciles a LandlockProfile object
 type LandlockProfileReconciler struct {
 	client.Client
+
 	Scheme *runtime.Scheme
 }
 

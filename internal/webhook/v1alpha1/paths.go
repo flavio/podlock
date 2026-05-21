@@ -9,6 +9,13 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
+const (
+	fieldReadOnly      = "readOnly"
+	fieldReadExec      = "readExec"
+	fieldReadWriteExec = "readWriteExec"
+	fieldReadWrite     = "readWrite"
+)
+
 func (v *LandlockProfileCustomValidator) validateBinaryPath(path string, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
@@ -27,7 +34,7 @@ func (v *LandlockProfileCustomValidator) validateReadOnlyPaths(profile v1alpha1.
 	var allErrs field.ErrorList
 
 	for i, path := range profile.ReadOnly {
-		allErrs = append(allErrs, v.validateBinaryPath(path, fldPath.Child("readOnly").Index(i))...)
+		allErrs = append(allErrs, v.validateBinaryPath(path, fldPath.Child(fieldReadOnly).Index(i))...)
 	}
 
 	return allErrs
@@ -37,7 +44,7 @@ func (v *LandlockProfileCustomValidator) validateReadWritePaths(profile v1alpha1
 	var allErrs field.ErrorList
 
 	for i, path := range profile.ReadWrite {
-		allErrs = append(allErrs, v.validateBinaryPath(path, fldPath.Child("readWrite").Index(i))...)
+		allErrs = append(allErrs, v.validateBinaryPath(path, fldPath.Child(fieldReadWrite).Index(i))...)
 	}
 
 	return allErrs
@@ -47,7 +54,7 @@ func (v *LandlockProfileCustomValidator) validateReadExecPaths(profile v1alpha1.
 	var allErrs field.ErrorList
 
 	for i, path := range profile.ReadExec {
-		allErrs = append(allErrs, v.validateBinaryPath(path, fldPath.Child("readExec").Index(i))...)
+		allErrs = append(allErrs, v.validateBinaryPath(path, fldPath.Child(fieldReadExec).Index(i))...)
 	}
 
 	return allErrs
@@ -57,7 +64,7 @@ func (v *LandlockProfileCustomValidator) validateReadWriteExecPaths(profile v1al
 	var allErrs field.ErrorList
 
 	for i, path := range profile.ReadWriteExec {
-		allErrs = append(allErrs, v.validateBinaryPath(path, fldPath.Child("readWriteExec").Index(i))...)
+		allErrs = append(allErrs, v.validateBinaryPath(path, fldPath.Child(fieldReadWriteExec).Index(i))...)
 	}
 
 	return allErrs
@@ -78,12 +85,12 @@ func (v *LandlockProfileCustomValidator) validateNoOverlappingPaths(profile v1al
 		field2 string
 		set2   sets.Set[string]
 	}{
-		{"readOnly", readOnly, "readWrite", readWrite},
-		{"readOnly", readOnly, "readExec", readExec},
-		{"readOnly", readOnly, "readWriteExec", readWriteExec},
-		{"readWrite", readWrite, "readExec", readExec},
-		{"readWrite", readWrite, "readWriteExec", readWriteExec},
-		{"readExec", readExec, "readWriteExec", readWriteExec},
+		{fieldReadOnly, readOnly, fieldReadWrite, readWrite},
+		{fieldReadOnly, readOnly, fieldReadExec, readExec},
+		{fieldReadOnly, readOnly, fieldReadWriteExec, readWriteExec},
+		{fieldReadWrite, readWrite, fieldReadExec, readExec},
+		{fieldReadWrite, readWrite, fieldReadWriteExec, readWriteExec},
+		{fieldReadExec, readExec, fieldReadWriteExec, readWriteExec},
 	}
 
 	for _, overlap := range overlaps {

@@ -7,6 +7,15 @@ import (
 	"github.com/flavio/podlock/internal/seal"
 )
 
+const (
+	mountTypeBind   = "bind"
+	mountOptionBind = "rbind"
+	mountOptionPriv = "rprivate"
+	hookArgBackup   = "-backup"
+	hookArgTarget   = "-target"
+	swapOciHookCmd  = "swap-oci-hook"
+)
+
 func createContainerAdjustment(
 	podID, containerName string,
 	profileByBinary podlockv1alpha1.ProfileByBinary,
@@ -18,16 +27,16 @@ func createContainerAdjustment(
 	adjustment.AddMount(&api.Mount{
 		Destination: SealBinaryPathContainer(),
 		Source:      SealBinaryPathHost,
-		Options:     []string{"rprivate", "rbind", "ro"},
-		Type:        "bind",
+		Options:     []string{mountOptionPriv, mountOptionBind, "ro"},
+		Type:        mountTypeBind,
 	})
 
 	// inject the profile
 	adjustment.AddMount(&api.Mount{
 		Destination: ContainerProfilePathInsideContainer(),
 		Source:      landlockProfilePathOnHost(podID, containerName),
-		Options:     []string{"rprivate", "rbind", "ro"},
-		Type:        "bind",
+		Options:     []string{mountOptionPriv, mountOptionBind, "ro"},
+		Type:        mountTypeBind,
 	})
 
 	// inject swap-oci-hook hooks for each binary
@@ -41,13 +50,13 @@ func createContainerAdjustment(
 		adjustment.AddMount(&api.Mount{
 			Destination: swappedBinInsideContainer,
 			Source:      swappedBinOnHost,
-			Options:     []string{"rprivate", "rbind", "ro"},
-			Type:        "bind",
+			Options:     []string{mountOptionPriv, mountOptionBind, "ro"},
+			Type:        mountTypeBind,
 		})
 
 		hook := &api.Hook{
 			Path: SwapOciHookBinaryPathHost,
-			Args: []string{"swap-oci-hook", "-target", binary, "-backup", swappedBinInsideContainer},
+			Args: []string{swapOciHookCmd, hookArgTarget, binary, hookArgBackup, swappedBinInsideContainer},
 		}
 
 		createContainerHooks = append(createContainerHooks, hook)

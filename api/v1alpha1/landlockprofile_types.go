@@ -90,7 +90,8 @@ type LandlockProfile struct {
 type LandlockProfileList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitzero"`
-	Items           []LandlockProfile `json:"items"`
+
+	Items []LandlockProfile `json:"items"`
 }
 
 func init() {
