@@ -3,7 +3,7 @@ module github.com/flavio/podlock
 go 1.26.0
 
 require (
-	github.com/containerd/nri v0.12.2
+	github.com/containerd/nri v0.12.3
 	github.com/go-logr/logr v1.4.4
 	github.com/landlock-lsm/go-landlock v0.10.0
 	github.com/lmittmann/tint v1.1.3
