@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/logr v1.4.4
 	github.com/landlock-lsm/go-landlock v0.10.1
 	github.com/lmittmann/tint v1.1.3
-	github.com/onsi/ginkgo/v2 v2.32.1
+	github.com/onsi/ginkgo/v2 v2.33.0
 	github.com/onsi/gomega v1.43.1
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/sys v0.48.0
