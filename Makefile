@@ -35,7 +35,7 @@ test-e2e: controller-image nri-image
 fmt:
 	$(GO_BUILD_ENV) go fmt ./...
 
-.PHOHY: lint
+.PHONY: lint
 lint: golangci-lint
 	$(GO_BUILD_ENV) $(GOLANGCI_LINT) run --verbose
 
@@ -43,7 +43,7 @@ lint: golangci-lint
 lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 	$(GO_BUILD_ENV) $(GOLANGCI_LINT) run --fix
 
-.PHOHY: vet
+.PHONY: vet
 vet:
 	$(GO_BUILD_ENV) go vet ./...
 
@@ -136,7 +136,7 @@ $(LOCALBIN):
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint-$(GOLANGCI_LINT_VERSION)
 
 ## Tool Versions
-GOLANGCI_LINT_VERSION ?= v2.12.2
+GOLANGCI_LINT_VERSION ?= v2.14.0
 
 .PHONY: golangci-lint
 golangci-lint: $(GOLANGCI_LINT) ## Download golangci-lint locally if necessary.

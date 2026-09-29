@@ -53,12 +53,10 @@ func setupLogger(logLevel string, logFormat LogFormat) *slog.Logger {
 
 	switch logFormat {
 	case LogFormatText:
-		slogHandler := tint.NewHandler(os.Stdout,
-			&tint.Options{
-				Level:      slog.LevelDebug,
-				TimeFormat: time.Kitchen,
-			})
-		return slog.New(slogHandler).With("component", "seal")
+		return slog.New(tint.NewTextHandler(os.Stdout, &tint.Options{
+			Level:      slog.LevelDebug,
+			TimeFormat: time.Kitchen,
+		})).With("component", "seal")
 	case LogFormatJSON:
 		fallthrough
 	default:
